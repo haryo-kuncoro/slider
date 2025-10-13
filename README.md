@@ -1,38 +1,41 @@
-# 🎓 Buku Wisuda Generator (PHP + jsPDF)
+# 🎓 Slider Wisuda Berbasis Website (PHP + MySql + jsPDF)
 
-Proyek ini adalah aplikasi **pembuatan Buku Wisuda otomatis** berbasis **PHP Native** dan **jsPDF (JavaScript)**  
+Saya ingin berbagi **slider wisuda dan juga disertai generator buku wisuda otomatis** berbasis **PHP Native** dan **jsPDF (JavaScript)**  
 yang menghasilkan file **PDF ukuran A5** berisi data wisudawan lengkap dengan foto, identitas, dan judul skripsi.
 
 ---
 
 ## ✨ Fitur Utama
 
-✅ Mengambil data wisudawan dari **file PHP (`data-buku.php`)** berupa JSON  
+✅ Slider Wisudawan Berbasis Website  
+✅ Cek foto apakah sudah exist/tersedia atau belum    
 ✅ Menampilkan seluruh data lintas prodi (tanpa parameter)  
-✅ Otomatis **generate PDF ukuran A5** dengan layout rapi  
-✅ Foto wisudawan muncul di **sebelah kiri**, teks detail di kanan  
-✅ Format detail sejajar vertikal dengan titik dua lurus (`:`)  
-✅ Judul skripsi otomatis **wrap ke baris baru** jika panjang  
-✅ Bisa diunduh langsung sebagai `Buku_Wisuda_A5.pdf`
+✅ Generate Buku Wisuda Otomatis **generate PDF ukuran A5** dengan layout rapi   
+✅ Bisa diunduh langsung sebagai file `Buku_Wisuda_A5.pdf`
 
 ---
 
-## 📂 Struktur Folder
-
-buku-wisuda/
-├── buku_wisuda.html # Halaman utama untuk generate PDF
-├── data-buku.php # Output JSON data wisudawan
-├── photo/ # Folder foto wisudawan (2025/xxxx.jpg)
-├── connection.php # Koneksi database (jika diperlukan)
-└── README.md # Dokumentasi proyek (file ini)
-
----
-
-## ⚙️ Cara Menggunakan
+## ⚙️ Cara Menggunakan Slider Wisudawan
 
 1. Pastikan web server lokal aktif (XAMPP / Laragon / dsb)
-2. Letakkan seluruh file di folder `htdocs/buku-wisuda/`
-3. Pastikan folder `photo/` berisi foto-foto wisudawan (misal: `photo/2025/2021020006.jpg`)
+2. Letakkan seluruh file di folder `htdocs/slider/`
+3. Pastikan folder `photo/` berisi foto-foto wisudawan (misal: `photo/2025/20210xxx.jpg`)
+4. Pastikan file `db_slider.sql` sudah diimport ke dalam database
+5. Anda dapat merubah data melalui phpmyadmin ada dbever mana yg lebih mudah
+
+---
+
+## ⚙️ Cara Menjalankan Slider Wisudawan
+
+http://localhost/slider/index.php
+
+---
+
+## ⚙️ Cara Menggunakan Generator Buku Wisuda
+
+1. Pastikan web server lokal aktif (XAMPP / Laragon / dsb)
+2. Letakkan seluruh file di folder `htdocs/slider/`
+3. Pastikan folder `photo/` berisi foto-foto wisudawan (misal: `photo/2025/20210xxx.jpg`)
 4. Pastikan file `data-buku.php` mengembalikan JSON seperti contoh berikut:
 
 ```json
@@ -53,6 +56,6 @@ buku-wisuda/
 ```
 ---
 
-## ⚙️ Cara Menjalankan
+## ⚙️ Cara Menjalankan Generator Buku Wisuda
 
 http://localhost/slider/buku-js.html
