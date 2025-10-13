@@ -50,7 +50,7 @@ buku-wisuda/
     "judul": "Analisis Sistem Informasi Akademik ..."
   }
 ]
-
+```
 ---
 
 ## ⚙️ Cara Menjalankan
