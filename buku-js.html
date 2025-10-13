@@ -16,11 +16,9 @@
   <button id="generate">📘 Generate PDF Semua Prodi</button>
   <div id="loading">⏳ Sedang memproses data wisuda...</div>
 
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-<script>
-  const { jsPDF } = window.jspdf;
+  <script>
+    const { jsPDF } = window.jspdf;
 
-    // Fungsi konversi URL gambar ke base64 agar bisa dimasukkan ke PDF
     async function getBase64Image(url) {
       try {
         const res = await fetch(url);
@@ -42,9 +40,8 @@
       loading.style.display = "block";
 
       try {
-        // Ambil data JSON semua prodi
         const response = await fetch("data-buku.php");
-        if (!response.ok) throw new Error("Gagal memuat data_buku.php");
+        if (!response.ok) throw new Error("Gagal memuat data-buku.php");
         const data = await response.json();
 
         if (!Array.isArray(data) || data.length === 0) {
@@ -53,55 +50,80 @@
           return;
         }
 
-        console.log(`Data diterima: ${data.length} wisudawan`);
-
         const doc = new jsPDF({ format: "a5", unit: "mm" });
-        const perPage = 4;         // Jumlah wisudawan per halaman
+        const perPage = 4; // 4 wisudawan per halaman
         const margin = 10;
-        const fotoSize = 25;
-        const textOffset = 35;
-        const pageW = doc.internal.pageSize.getWidth();
-        const pageH = doc.internal.pageSize.getHeight();
+        const fotoW = 25;
+        const fotoH = 32;
+        const textStartX = margin + fotoW + 5;
         let y = margin;
-        let halaman = 1;
 
         for (let i = 0; i < data.length; i++) {
           const mhs = data[i];
           const foto = await getBase64Image(mhs.foto);
-          const even = i % 2 === 0;
-          const xFoto = even ? margin : (pageW - margin - fotoSize);
-          const xText = even ? (margin + textOffset) : (margin);
 
-          // Gambar foto
+          // Tambah nomor urut
+          const noUrut = (i + 1).toString().padStart(2, "0");
+
+          // Gambar foto (kiri)
           if (foto) {
-            doc.addImage(foto, "JPEG", xFoto, y, fotoSize, fotoSize);
+            doc.addImage(foto, "JPEG", margin, y, fotoW, fotoH);
           } else {
-            doc.rect(xFoto, y, fotoSize, fotoSize); // kotak kosong jika foto tidak ditemukan
+            doc.rect(margin, y, fotoW, fotoH); // kotak kosong jika foto tidak ditemukan
           }
 
-          // Teks
-          doc.setFontSize(10);
-          doc.text(mhs.nama, xText + (even ? 0 : textOffset), y + 6);
-          doc.setFontSize(8);
-          doc.text(mhs.tmpttl, xText + (even ? 0 : textOffset), y + 12);
+          // Teks keterangan
+          const xLabel = textStartX;
+          const xValue = textStartX + 23; // jarak antar kolom label dan nilai
+
           doc.setFontSize(7);
-          doc.text(mhs.prodi, xText + (even ? 0 : textOffset), y + 18);
+          let tY = y + 2;
+          doc.text("No. Urut", xLabel, tY);
+          doc.text(`: ${noUrut}`, xValue, tY); tY += 3.3;
 
-          y += fotoSize + 6;
+          doc.text("Nama", xLabel, tY);
+          doc.text(`: ${mhs.nama}`, xValue, tY); tY += 3.3;
 
-          // Buat halaman baru setiap 6 orang
+          doc.text("NPM", xLabel, tY);
+          doc.text(`: ${mhs.nirm}`, xValue, tY); tY += 3.3;
+
+          doc.text("Tempat/Tgl Lahir", xLabel, tY);
+          doc.text(`: ${mhs.tmpttl}`, xValue, tY); tY += 3.3;
+
+          doc.text("Program Studi", xLabel, tY);
+          doc.text(`: ${mhs.prodi}`, xValue, tY); tY += 3.3;
+
+          doc.text("Asal Sekolah", xLabel, tY);
+          doc.text(`: ${mhs.asalsekolah}`, xValue, tY); tY += 4;
+
+          doc.text("Nama Orangtua", xLabel, tY);
+          doc.text(` `, xValue, tY); tY += 3.3;
+
+          doc.text("Ayah", xLabel, tY);
+          doc.text(`: ${mhs.ayah}`, xValue, tY); tY += 3.3;
+
+          doc.text("Ibu", xLabel, tY);
+          doc.text(`: ${mhs.ibu}`, xValue, tY); tY += 3.3;
+
+          doc.text("Alamat", xLabel, tY);
+          doc.text(`: ${mhs.alamat}`, xValue, tY); tY += 3.3;
+
+          // ==== BAGIAN JUDUL SKRIPSI ====
+          doc.text("Judul Skripsi", xLabel, tY);
+          const maxWidth = 80; 
+          const judulLines = doc.splitTextToSize(`: ${mhs.judul}`, maxWidth);
+          doc.text(judulLines, xValue, tY);
+          tY += (judulLines.length * 4);
+
+          // Spasi antar data
+          y += fotoH + (judulLines.length * 2) + 8;
+
+          // Ganti halaman tiap 4 wisudawan
           if ((i + 1) % perPage === 0 && i < data.length - 1) {
-            // doc.setFontSize(8);
-            // doc.text(`Halaman ${halaman}`, pageW / 2, pageH - 5, { align: "center" });
             doc.addPage();
-            halaman++;
             y = margin;
           }
         }
-
-        // Nomor halaman terakhir
-        doc.setFontSize(8);
-        doc.text(`Halaman ${halaman}`, pageW / 2, pageH - 5, { align: "center" });
 
         doc.save("Buku_Wisuda_A5.pdf");
       } catch (e) {

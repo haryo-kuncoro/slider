@@ -24,8 +24,13 @@ foreach ($array_urutan as $prodiforshow) {
         while ($r = mysqli_fetch_assoc($res)) {
             $NOURUT = strtoupper($r['urutan']);
             $NIRM = strtoupper($r['nirm']);
-            $NAMA = ucwords(strtolower($r['nama']));
-            $TMPTTL = ucwords(strtolower($r['tmp_tgl_lahir']));
+            $NAMA = $r['nama'];
+            $TMPTTL = $r['tmp_tgl_lahir'];
+            $ASAL = ucwords(strtolower($r['asal_sekolah']));
+            $ALAMAT = ucwords(strtolower($r['alamat']));
+            $NMAYAH = $r['ortu_laki'];
+            $NMIBU = $r['ortu_perempuan'];
+            $JUDUL = $r['judul'];
             $GAMBAR = file_exists("photo/2025/$NIRM.jpg") ? "photo/2025/$NIRM.jpg" : "photo/alumni.jpg";
 
             $data_final[] = [
@@ -33,7 +38,11 @@ foreach ($array_urutan as $prodiforshow) {
                 "nirm" => $NIRM,
                 "nama" => $NAMA,
                 "tmpttl" => $TMPTTL,
-                "asalsekolah" => $NIRM,
+                "asalsekolah" => $ASAL,
+                "alamat" => $ALAMAT,
+                "ayah" => $NMAYAH,
+                "ibu" => $NMIBU,
+                "judul" => $JUDUL,
                 "foto" => $GAMBAR,
                 "prodi" => $prodiforshow
             ];
