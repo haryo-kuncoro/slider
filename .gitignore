@@ -1,0 +1,6 @@
+# Ignore semua isi folder photo
+photo/*
+
+# Tapi jangan ignore folder photo itu sendiri
+!photo/.gitkeep
+!photo/alumni.jpg

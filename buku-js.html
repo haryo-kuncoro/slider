@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <title>Buku Wisuda - A5</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <style>
+    body { font-family: Arial, sans-serif; text-align: center; margin-top: 30px; }
+    button { padding: 10px 20px; font-size: 14px; cursor: pointer; }
+    #loading { display: none; margin-top: 15px; font-size: 13px; color: gray; }
+  </style>
+</head>
+<body>
+  <h2>Buku Wisuda</h2>
+  <p>Menampilkan semua data dari <b>data-buku.php</b></p>
+  <button id="generate">📘 Generate PDF Semua Prodi</button>
+  <div id="loading">⏳ Sedang memproses data wisuda...</div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script>
+  const { jsPDF } = window.jspdf;
+
+    // Fungsi konversi URL gambar ke base64 agar bisa dimasukkan ke PDF
+    async function getBase64Image(url) {
+      try {
+        const res = await fetch(url);
+        const blob = await res.blob();
+        return await new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onloadend = () => resolve(reader.result);
+          reader.onerror = reject;
+          reader.readAsDataURL(blob);
+        });
+      } catch (err) {
+        console.warn("Gagal ambil gambar:", url);
+        return null;
+      }
+    }
+
+    document.getElementById("generate").addEventListener("click", async () => {
+      const loading = document.getElementById("loading");
+      loading.style.display = "block";
+
+      try {
+        // Ambil data JSON semua prodi
+        const response = await fetch("data-buku.php");
+        if (!response.ok) throw new Error("Gagal memuat data_buku.php");
+        const data = await response.json();
+
+        if (!Array.isArray(data) || data.length === 0) {
+          alert("❌ Tidak ada data wisudawan ditemukan.");
+          loading.style.display = "none";
+          return;
+        }
+
+        console.log(`Data diterima: ${data.length} wisudawan`);
+
+        const doc = new jsPDF({ format: "a5", unit: "mm" });
+        const perPage = 4;         // Jumlah wisudawan per halaman
+        const margin = 10;
+        const fotoSize = 25;
+        const textOffset = 35;
+        const pageW = doc.internal.pageSize.getWidth();
+        const pageH = doc.internal.pageSize.getHeight();
+        let y = margin;
+        let halaman = 1;
+
+        for (let i = 0; i < data.length; i++) {
+          const mhs = data[i];
+          const foto = await getBase64Image(mhs.foto);
+          const even = i % 2 === 0;
+          const xFoto = even ? margin : (pageW - margin - fotoSize);
+          const xText = even ? (margin + textOffset) : (margin);
+
+          // Gambar foto
+          if (foto) {
+            doc.addImage(foto, "JPEG", xFoto, y, fotoSize, fotoSize);
+          } else {
+            doc.rect(xFoto, y, fotoSize, fotoSize); // kotak kosong jika foto tidak ditemukan
+          }
+
+          // Teks
+          doc.setFontSize(10);
+          doc.text(mhs.nama, xText + (even ? 0 : textOffset), y + 6);
+          doc.setFontSize(8);
+          doc.text(mhs.tmpttl, xText + (even ? 0 : textOffset), y + 12);
+          doc.setFontSize(7);
+          doc.text(mhs.prodi, xText + (even ? 0 : textOffset), y + 18);
+
+          y += fotoSize + 6;
+
+          // Buat halaman baru setiap 6 orang
+          if ((i + 1) % perPage === 0 && i < data.length - 1) {
+            // doc.setFontSize(8);
+            // doc.text(`Halaman ${halaman}`, pageW / 2, pageH - 5, { align: "center" });
+            doc.addPage();
+            halaman++;
+            y = margin;
+          }
+        }
+
+        // Nomor halaman terakhir
+        doc.setFontSize(8);
+        doc.text(`Halaman ${halaman}`, pageW / 2, pageH - 5, { align: "center" });
+
+        doc.save("Buku_Wisuda_A5.pdf");
+      } catch (e) {
+        console.error(e);
+        alert("Terjadi kesalahan: " + e.message);
+      } finally {
+        loading.style.display = "none";
+      }
+    });
+  </script>
+</body>
+</html>
