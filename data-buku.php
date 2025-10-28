@@ -5,14 +5,14 @@ $show_upload_no_photo = '0';
 $total_image_perpage = 6;
 
 // Ambil parameter prodi
-$SET_PRODI = isset($_GET['p']) ? trim($_GET['p']) : "";
+$SET_PRODI = isset($_GET['prodi']) ? trim($_GET['prodi']) : "";
 $array_urutan = [];
 
-switch ($SET_PRODI) {
-    case "hk": $array_urutan = ["Hukum"]; break;
-    case "mj": $array_urutan = ["Manajemen"]; break;
-    case "ak": $array_urutan = ["Akuntansi"]; break;
-    default: $array_urutan = ["Hukum","Manajemen","Akuntansi"];
+if (empty($SET_PRODI)) {
+    $array_urutan = ["Hukum", "Manajemen", "Akuntansi"];
+} else {
+    // Jika ada nilai, jadikan array tunggal
+    $array_urutan = [$SET_PRODI];
 }
 $data_final = [];
 

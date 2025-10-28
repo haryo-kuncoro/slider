@@ -11,13 +11,38 @@
   </style>
 </head>
 <body>
-  <h2>Buku Wisuda</h2>
-  <p>Menampilkan semua data dari <b>data-buku.php</b></p>
-  <button id="generate">📘 Generate PDF Semua Prodi</button>
+  <h2 id="judul-buku">Buku Wisuda</h2>
+  <p id="info-buku">Menampilkan semua data dari <b>data-buku.php</b></p>
+  <button id="generate" class="btn">📘 Generate PDF Semua Prodi</button>
   <div id="loading">⏳ Sedang memproses data wisuda...</div>
 
   <script>
     const { jsPDF } = window.jspdf;
+
+    // Fungsi ambil parameter dari URL
+    function getQueryParam(param) {
+      const urlParams = new URLSearchParams(window.location.search);
+      return urlParams.get(param) || "";
+    }
+
+    // Ambil nilai prodi dari URL (misal ?prodi=Hukum)
+    const selectedProdi = getQueryParam("prodi");
+
+    // Elemen-elemen yang mau diubah
+    const judul = document.getElementById("judul-buku");
+    const info = document.getElementById("info-buku");
+    const tombol = document.getElementById("generate");
+
+    // Jika ada prodi di URL
+    if (selectedProdi) {
+      judul.textContent = `Buku Wisuda – ${selectedProdi}`;
+      info.innerHTML = `Menampilkan data wisudawan untuk <b>Program Studi ${selectedProdi}</b> dari <b>data-buku.php?prodi=${selectedProdi}</b>`;
+      tombol.textContent = `📘 Generate PDF Prodi ${selectedProdi}`;
+    } else {
+      judul.textContent = "Buku Wisuda – Semua Prodi";
+      info.innerHTML = `Menampilkan semua data wisudawan dari <b>data-buku.php</b>`;
+      tombol.textContent = "📘 Generate PDF Semua Prodi";
+    }
 
     async function getBase64Image(url) {
       try {
@@ -40,8 +65,15 @@
       loading.style.display = "block";
 
       try {
-        const response = await fetch("data-buku.php");
-        if (!response.ok) throw new Error("Gagal memuat data-buku.php");
+        // === panggil data-buku.php sesuai prodi ===
+        let url = "data-buku.php";
+        if (selectedProdi) {
+          url += "?prodi=" + encodeURIComponent(selectedProdi);
+        }
+
+        const response = await fetch(url);
+        if (!response.ok) throw new Error("Gagal memuat " + url);
+
         const data = await response.json();
 
         if (!Array.isArray(data) || data.length === 0) {
@@ -51,7 +83,7 @@
         }
 
         const doc = new jsPDF({ format: "a5", unit: "mm" });
-        const perPage = 4; // 4 wisudawan per halaman
+        const perPage = 4;
         const margin = 10;
         const fotoW = 25;
         const fotoH = 32;
@@ -62,70 +94,77 @@
           const mhs = data[i];
           const foto = await getBase64Image(mhs.foto);
 
-          // Tambah nomor urut
           const noUrut = (i + 1).toString().padStart(2, "0");
 
-          // Gambar foto (kiri)
           if (foto) {
             doc.addImage(foto, "JPEG", margin, y, fotoW, fotoH);
           } else {
-            doc.rect(margin, y, fotoW, fotoH); // kotak kosong jika foto tidak ditemukan
+            doc.rect(margin, y, fotoW, fotoH);
           }
 
-          // Teks keterangan
           const xLabel = textStartX;
-          const xValue = textStartX + 23; // jarak antar kolom label dan nilai
+          const xSeparator = textStartX + 22;
+          const xValue = textStartX + 24;
 
           doc.setFontSize(7);
           let tY = y + 2;
           doc.text("No. Urut", xLabel, tY);
-          doc.text(`: ${noUrut}`, xValue, tY); tY += 3.3;
+          doc.text(`:`, xSeparator, tY);
+          doc.text(`${mhs.nourut}`, xValue, tY); tY += 3.3;
 
           doc.text("Nama", xLabel, tY);
-          doc.text(`: ${mhs.nama}`, xValue, tY); tY += 3.3;
+          doc.text(`:`, xSeparator, tY);
+          doc.text(`${mhs.nama}`, xValue, tY); tY += 3.3;
 
           doc.text("NPM", xLabel, tY);
-          doc.text(`: ${mhs.nirm}`, xValue, tY); tY += 3.3;
+          doc.text(`:`, xSeparator, tY);
+          doc.text(`${mhs.nirm}`, xValue, tY); tY += 3.3;
 
           doc.text("Tempat/Tgl Lahir", xLabel, tY);
-          doc.text(`: ${mhs.tmpttl}`, xValue, tY); tY += 3.3;
+          doc.text(`:`, xSeparator, tY);
+          doc.text(`${mhs.tmpttl}`, xValue, tY); tY += 3.3;
 
           doc.text("Program Studi", xLabel, tY);
-          doc.text(`: ${mhs.prodi}`, xValue, tY); tY += 3.3;
+          doc.text(`:`, xSeparator, tY);
+          doc.text(`${mhs.prodi}`, xValue, tY); tY += 3.3;
 
           doc.text("Asal Sekolah", xLabel, tY);
-          doc.text(`: ${mhs.asalsekolah}`, xValue, tY); tY += 4;
+          doc.text(`:`, xSeparator, tY);
+          doc.text(`${mhs.asalsekolah}`, xValue, tY); tY += 4;
 
           doc.text("Nama Orangtua", xLabel, tY);
           doc.text(` `, xValue, tY); tY += 3.3;
 
           doc.text("Ayah", xLabel, tY);
-          doc.text(`: ${mhs.ayah}`, xValue, tY); tY += 3.3;
+          doc.text(`:`, xSeparator, tY);
+          doc.text(`${mhs.ayah}`, xValue, tY); tY += 3.3;
 
           doc.text("Ibu", xLabel, tY);
-          doc.text(`: ${mhs.ibu}`, xValue, tY); tY += 3.3;
+          doc.text(`:`, xSeparator, tY);
+          doc.text(`${mhs.ibu}`, xValue, tY); tY += 3.3;
 
           doc.text("Alamat", xLabel, tY);
-          doc.text(`: ${mhs.alamat}`, xValue, tY); tY += 3.3;
+          doc.text(`:`, xSeparator, tY);
+          doc.text(`${mhs.alamat}`, xValue, tY); tY += 3.3;
 
-          // ==== BAGIAN JUDUL SKRIPSI ====
           doc.text("Judul Skripsi", xLabel, tY);
-          const maxWidth = 80; 
-          const judulLines = doc.splitTextToSize(`: ${mhs.judul}`, maxWidth);
+          doc.text(`:`, xSeparator, tY);
+          const maxWidth = 80;
+          const judulLines = doc.splitTextToSize(`${mhs.judul}`, maxWidth);
           doc.text(judulLines, xValue, tY);
           tY += (judulLines.length * 4);
 
-          // Spasi antar data
           y += fotoH + (judulLines.length * 2) + 8;
 
-          // Ganti halaman tiap 4 wisudawan
           if ((i + 1) % perPage === 0 && i < data.length - 1) {
             doc.addPage();
             y = margin;
           }
         }
 
-        doc.save("Buku_Wisuda_A5.pdf");
+        // Nama file otomatis
+        const namaFile = "Buku_Wisuda_" + (selectedProdi || "Semua_Prodi") + ".pdf";
+        doc.save(namaFile);
       } catch (e) {
         console.error(e);
         alert("Terjadi kesalahan: " + e.message);
@@ -134,5 +173,6 @@
       }
     });
   </script>
+
 </body>
 </html>

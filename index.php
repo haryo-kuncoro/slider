@@ -8,6 +8,9 @@
     $limit = 10;
     $offset = isset($_GET['page']) ? ($_GET['page'] - 1) * $limit : 0;
     
+    // Get Prodi for showing only by prodi
+    $SET_PRODI = isset($_GET['prodi']) && $_GET['prodi'] != "" ? htmlentities($_GET['prodi']) : "";
+
     // Get gelombang and jump values from URL
     $SET_GELOMBANG = isset($_GET['g']) && $_GET['g'] != "" ? htmlentities($_GET['g']) : "";
     $SET_JUMP = isset($_GET['jump']) && $_GET['jump'] != "" ? htmlentities($_GET['jump']) : 0;
@@ -46,7 +49,13 @@
             <div class="glide__slides">
                 <?php
                     $i = $offset + 1;
-                    $array_urutan = array("Hukum", "Manajemen", "Akuntansi");
+                    if (empty($SET_PRODI)) {
+                        $array_urutan = ["Hukum", "Manajemen", "Akuntansi"];
+                    } else {
+                        // Jika ada nilai, jadikan array tunggal
+                        $array_urutan = [$SET_PRODI];
+                    }
+                    // $array_urutan = array("Hukum", "Manajemen", "Akuntansi");
                     
                     foreach($array_urutan as $prodiforshow) {
                         $tableprodi = "tbl_wisudawan";
