@@ -79,7 +79,7 @@
                                     $ORTULAKI = strtoupper($row['ortu_laki']);
                                     $ORTUPEREMPUAN = strtoupper($row['ortu_perempuan']);
                                     $TMPTTL = strtoupper($row['tmp_tgl_lahir']);
-                                    $IPK = number_format(str_replace(",", ".", $row['ipk']), 2);
+                                    $IPK = !empty($row['ipk']) ? number_format((float)str_replace(",", ".", $row['ipk']), 2) : "";
                                     $JUDUL = strtoupper($row['judul']);
                                     $KETERANGAN = strtoupper($row['keterangan']);
                                     $PRODI = strtoupper($row['prodi']);
@@ -101,6 +101,8 @@
                                     $propercase_string = ucwords(strtolower($KETERANGAN));
     
                                     // Render slide HTML
+                                    $showIPK = true; // [true] atau [false], ubah untuk menampilkan ipk dan ket cumlaude 
+
                                     echo "
                                     <div class='glide__slide' data-index='$i'>
                                         <div class='_container'>
@@ -139,22 +141,37 @@
                                                     <div class='_row'>
                                                         <div class='_column'></div>
                                                         <div class='_kampus'><img src='./img/new/diktisaintek.png' /></div>
+                                                    </div>";
+
+                                    if ($showIPK && !empty($IPK)) {
+                                        echo "
+                                            <div class='_column' style='text-align:center'>
+                                                <div class='_profile'>
+                                                    <img class='lazyload' src='$GAMBAR'/>
+                                                </div>
+                                            </div>";
+                                    }else{
+                                        echo "
+                                            <div class='_column' style='text-align:right'>
+                                                <div class='_profile'>
+                                                    <img class='lazyload' src='$GAMBAR'/>
+                                                </div>
+                                            </div>";
+                                    }
+
+                                    if ($showIPK && !empty($IPK)) {
+                                        echo "
+                                            <div class='_row _ipk_container'>
+                                                <div class='_column'>
+                                                    <div class='_ipk' style='text-align:center'>
+                                                        <p>IPK (Indeks Prestasi Kumulatif)</p>
+                                                        <h2>$IPK</h2>
                                                     </div>
-    
-                                                    <div class='_column' style='text-align:center'>
-                                                        <div class='_profile'>
-                                                            <img class='lazyload' src='$GAMBAR'/>
-                                                        </div>
-                                                    </div>
-    
-                                                    <div class='_row _ipk_container'>
-                                                        <div class='_column'>
-                                                            <div class='_ipk' style='text-align:center'>
-                                                                <p>IPK (Indeks Prestasi Kumulatif)</p>
-                                                                <h2>$IPK</h2>
-                                                            </div>
-                                                        </div>
-                                                    </div>
+                                                </div>
+                                            </div>";
+                                    }
+
+                                    echo "
                                                 </div>
                                             </div>
                                         </div>

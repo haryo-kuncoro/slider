@@ -194,7 +194,7 @@ $result = mysqli_query($koneksi, "SELECT * FROM tbl_wisudawan $where ORDER BY pr
           <input type="text" name="ortu_perempuan" id="ortu_perempuan" class="form-control">
         </div>
         <div class="col-md-6">
-          <label>Tempat Tgl Lahir</label>
+          <label>Tempat / Tgl Lahir</label>
           <input type="text" name="tmp_tgl_lahir" id="tmp_tgl_lahir" class="form-control">
         </div>
         <div class="col-md-6">

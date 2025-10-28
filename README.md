@@ -12,17 +12,17 @@ yang menghasilkan file **PDF ukuran A5** berisi data wisudawan lengkap dengan fo
 ✅ Menampilkan seluruh data lintas prodi (tanpa parameter)  
 ✅ Generate Buku Wisuda Otomatis **generate PDF ukuran A5** dengan layout rapi   
 ✅ Bisa diunduh langsung sebagai file `Buku_Wisuda_A5.pdf`   
-✅ Disertai halaman ADMIN, untuk mengelola data dan sudah tersedia tombol Cetak Buku Wisuda serta Play Slider
+✅ Disertai halaman **ADMIN**, untuk mengelola data dan sudah tersedia tombol **Cetak Buku Wisuda** serta **Play Slider**
 
 ---
 
-## ⚙️ Masuk ke halaman **Admin**
+## ⚙️ Masuk ke halaman Admin
 
 http://localhost/slider/admin.php
 
 ---
 
-## ⚙️ Cara Menggunakan **Slider Wisudawan**
+## ⚙️ Cara Menggunakan Slider Wisudawan
 
 1. Pastikan web server lokal aktif (XAMPP / Laragon / dsb)
 2. Letakkan seluruh file di folder `www/slider/`
@@ -30,15 +30,14 @@ http://localhost/slider/admin.php
 4. Pastikan file `db_slider.sql` sudah diimport ke dalam database
 5. Anda dapat merubah data melalui phpmyadmin ada dbever mana yg lebih mudah
 
----
 
-### Cara Menjalankan **Slider Wisudawan**
+### Cara Menjalankan Slider Wisudawan
 
 http://localhost/slider/index.php
 
 ---
 
-## ⚙️ Cara Menggunakan **Generator Buku Wisuda**
+## ⚙️ Cara Menggunakan Generator Buku Wisuda
 
 1. Pastikan web server lokal aktif (XAMPP / Laragon / dsb)
 2. Letakkan seluruh file di folder `www/slider/`
@@ -62,8 +61,7 @@ http://localhost/slider/index.php
   }
 ]
 ```
----
 
-### Cara Menjalankan **Generator Buku Wisuda**
+### Cara Menjalankan Generator Buku Wisuda
 
 http://localhost/slider/buku-js.html
