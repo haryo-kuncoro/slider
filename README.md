@@ -32,7 +32,7 @@ http://localhost/slider/admin.php
 
 ---
 
-## ⚙️ Cara Menjalankan **Slider Wisudawan**
+### Cara Menjalankan **Slider Wisudawan**
 
 http://localhost/slider/index.php
 
@@ -64,6 +64,6 @@ http://localhost/slider/index.php
 ```
 ---
 
-## ⚙️ Cara Menjalankan **Generator Buku Wisuda**
+### Cara Menjalankan **Generator Buku Wisuda**
 
 http://localhost/slider/buku-js.html
