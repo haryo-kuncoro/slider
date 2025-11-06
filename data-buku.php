@@ -22,15 +22,16 @@ foreach ($array_urutan as $prodiforshow) {
         $q = "SELECT * FROM $tableprodi WHERE prodi='".$prodiforshow."' ORDER BY nama ASC";
         $res = mysqli_query($koneksi, $q);
         while ($r = mysqli_fetch_assoc($res)) {
-            $NOURUT = strtoupper($r['urutan']);
-            $NIRM = strtoupper($r['nirm']);
-            $NAMA = $r['nama'];
-            $TMPTTL = $r['tmp_tgl_lahir'];
-            $ASAL = ucwords(strtolower($r['asal_sekolah']));
-            $ALAMAT = ucwords(strtolower($r['alamat']));
-            $NMAYAH = $r['ortu_laki'];
-            $NMIBU = $r['ortu_perempuan'];
-            $JUDUL = $r['judul'];
+            $NOURUT = strtoupper($r['urutan'] ?? '');
+            $NIRM = strtoupper($r['nirm'] ?? '');
+            $PRD = $r['prodi'] ?? '';
+            $NAMA = $r['nama'] ?? '';
+            $TMPTTL = $r['tmp_tgl_lahir'] ?? '';
+            $ASAL = $r['asal_sekolah'] ?? '';
+            $ALAMAT = $r['alamat'] ?? '';
+            $NMAYAH = $r['ortu_laki'] ?? '';
+            $NMIBU = $r['ortu_perempuan'] ?? '';
+            $JUDUL = $r['judul'] ?? '';
             $GAMBAR = file_exists("photo/2025/$NIRM.jpg") ? "photo/2025/$NIRM.jpg" : "photo/alumni.jpg";
 
             $data_final[] = [
@@ -44,7 +45,7 @@ foreach ($array_urutan as $prodiforshow) {
                 "ibu" => $NMIBU,
                 "judul" => $JUDUL,
                 "foto" => $GAMBAR,
-                "prodi" => $prodiforshow
+                "prodi" => $PRD
             ];
         }
     }

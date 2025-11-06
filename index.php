@@ -74,15 +74,15 @@
 
                             if(mysqli_num_rows($execute) > 0) {
                                 while ($row = mysqli_fetch_array($execute)) {
-                                    $NIRM = strtoupper($row['nirm']);
-                                    $NAMA = strtoupper($row['nama']);
-                                    $ORTULAKI = strtoupper($row['ortu_laki']);
-                                    $ORTUPEREMPUAN = strtoupper($row['ortu_perempuan']);
-                                    $TMPTTL = strtoupper($row['tmp_tgl_lahir']);
+                                    $NIRM = !empty($row['nirm']) ? strtoupper($row['nirm']) : "";
+                                    $NAMA = !empty($row['nama']) ? strtoupper($row['nama']) : "";
+                                    $ORTULAKI = !empty($row['ortu_laki']) ? strtoupper($row['ortu_laki']) : "";
+                                    $ORTUPEREMPUAN = !empty($row['ortu_perempuan']) ? strtoupper($row['ortu_perempuan']) : "";
+                                    $TMPTTL = !empty($row['tmp_tgl_lahir']) ? strtoupper($row['tmp_tgl_lahir']) : "";
                                     $IPK = !empty($row['ipk']) ? number_format((float)str_replace(",", ".", $row['ipk']), 2) : "";
-                                    $JUDUL = strtoupper($row['judul']);
-                                    $KETERANGAN = strtoupper($row['keterangan']);
-                                    $PRODI = strtoupper($row['prodi']);
+                                    $JUDUL = !empty($row['judul']) ? strtoupper($row['judul']) : "";
+                                    $KETERANGAN = !empty($row['keterangan']) ? strtoupper($row['keterangan']) : "";
+                                    $PRODI = !empty($row['prodi']) ? strtoupper($row['prodi']) : "";
                                     
                                     // Lazy load images, use thumbnail if available
                                     if(is_file("photo/2025/".$NIRM."_thumb.jpg")){
@@ -97,8 +97,6 @@
                                             $GAMBAR = "photo/alumni.jpg";
                                         }
                                     }
-
-                                    $propercase_string = ucwords(strtolower($KETERANGAN));
     
                                     // Render slide HTML
                                     $showIPK = true; // [true] atau [false], ubah untuk menampilkan ipk dan ket cumlaude 
@@ -106,13 +104,16 @@
                                     echo "
                                     <div class='glide__slide' data-index='$i'>
                                         <div class='_container'>
+                                            <div class='_column'>
+                                                <div class='_row _center_align _logo'>
+                                                    <div class=''><img src='./img/new/logo-hukum.png' /></div>   
+                                                    <div class=''><img src='./img/new/logo-manajemen.png' /></div>  
+                                                    <div class=''><img src='./img/new/logo-yayasan.png' /></div> 
+                                                    <div class='_kampus'><img src='./img/new/diktisaintek.png' /></div>
+                                                </div>
+                                            </div>
                                             <div class='_row'>
                                                 <div class='_column_vh' style='margin-right: 30px'>
-                                                    <div class='_row _center_align _logo'>
-                                                        <div class=''><img src='./img/new/logo-hukum.png' /></div>   
-                                                        <div class=''><img src='./img/new/logo-manajemen.png' /></div>  
-                                                        <div class=''><img src='./img/new/logo-yayasan.png' /></div> 
-                                                    </div>
                                                     <div class='_selamat'><img src='./img/new/selamat.png' /></div>
                                                     
                                                     <div class='_nama'>
@@ -138,35 +139,19 @@
                                                 </div>
     
                                                 <div>
-                                                    <div class='_row'>
-                                                        <div class='_column'></div>
-                                                        <div class='_kampus'><img src='./img/new/diktisaintek.png' /></div>
+                                                    <div class='_column' style='text-align:right'>
+                                                        <div class='_profile'>
+                                                            <img class='lazyload' src='$GAMBAR'/>
+                                                        </div>
                                                     </div>";
 
                                     if ($showIPK && !empty($IPK)) {
                                         echo "
-                                            <div class='_column' style='text-align:center'>
-                                                <div class='_profile'>
-                                                    <img class='lazyload' src='$GAMBAR'/>
-                                                </div>
-                                            </div>";
-                                    }else{
-                                        echo "
                                             <div class='_column' style='text-align:right'>
-                                                <div class='_profile'>
-                                                    <img class='lazyload' src='$GAMBAR'/>
-                                                </div>
-                                            </div>";
-                                    }
-
-                                    if ($showIPK && !empty($IPK)) {
-                                        echo "
-                                            <div class='_row _ipk_container'>
-                                                <div class='_column'>
-                                                    <div class='_ipk' style='text-align:center'>
-                                                        <p>IPK (Indeks Prestasi Kumulatif)</p>
-                                                        <h2>$IPK</h2>
-                                                    </div>
+                                                <div class='_ipk' style='text-align:center'>
+                                                    <p>IPK (Indeks Prestasi Kumulatif)</p>
+                                                    <h2>$IPK</h2>
+                                                    <h3>~ $KETERANGAN ~</h3>
                                                 </div>
                                             </div>";
                                     }
