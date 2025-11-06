@@ -131,11 +131,11 @@ $result = mysqli_query($koneksi, "SELECT * FROM tbl_wisudawan $where ORDER BY pr
                 while ($row = mysqli_fetch_assoc($result)): ?>
                 <tr>
                     <td class=" text-center"><?= $no++ ?></td>
-                    <td class=" text-center"><?= htmlspecialchars($row['urutan']) ?></td>
-                    <td class=" text-center"><?= htmlspecialchars($row['nirm']) ?></td>
-                    <td><?= htmlspecialchars($row['nama']) ?></td>
-                    <td class=" text-center"><?= htmlspecialchars($row['prodi']) ?></td>
-                    <td class=" text-center"><?= htmlspecialchars($row['ipk']) ?></td>
+                    <td class=" text-center"><?= htmlspecialchars($row['urutan'] ?? '') ?></td>
+                    <td class=" text-center"><?= htmlspecialchars($row['nirm'] ?? '') ?></td>
+                    <td><?= htmlspecialchars($row['nama'] ?? '') ?></td>
+                    <td class=" text-center"><?= htmlspecialchars($row['prodi'] ?? '') ?></td>
+                    <td class=" text-center"><?= htmlspecialchars($row['ipk'] ?? '') ?></td>
                     <td class="text-center">
                         <button class="btn btn-sm btn-warning" 
                             data-bs-toggle="modal" 
