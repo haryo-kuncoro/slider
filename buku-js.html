@@ -143,18 +143,23 @@
           doc.text(`:`, xSeparator, tY);
           doc.text(`${mhs.ibu}`, xValue, tY); tY += 3.3;
 
+          const maxWidth = 80;
+
           doc.text("Alamat", xLabel, tY);
           doc.text(`:`, xSeparator, tY);
-          doc.text(`${mhs.alamat}`, xValue, tY); tY += 3.3;
+          // doc.text(`${mhs.alamat}`, xValue, tY); tY += 3.3;
+          const alamatLines = doc.splitTextToSize(`${mhs.alamat}`, maxWidth);
+          doc.text(alamatLines, xValue, tY);
+          tY += (alamatLines.length * 3);
 
           doc.text("Judul Skripsi", xLabel, tY);
           doc.text(`:`, xSeparator, tY);
-          const maxWidth = 80;
+          // const maxWidth = 80;
           const judulLines = doc.splitTextToSize(`${mhs.judul}`, maxWidth);
           doc.text(judulLines, xValue, tY);
           tY += (judulLines.length * 4);
 
-          y += fotoH + (judulLines.length * 2) + 8;
+          y += fotoH + (judulLines.length * 2) + (alamatLines.length * 2) + 8;
 
           if ((i + 1) % perPage === 0 && i < data.length - 1) {
             doc.addPage();
