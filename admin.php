@@ -69,8 +69,8 @@ $result = mysqli_query($koneksi, "SELECT * FROM tbl_wisudawan $where ORDER BY pr
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <title>Kelola Wisudawan per Prodi</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <title>Kelola Wisudawan</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
 <body class="bg-light">
 
@@ -102,6 +102,7 @@ $result = mysqli_query($koneksi, "SELECT * FROM tbl_wisudawan $where ORDER BY pr
             <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#formModal" onclick="clearForm()">+ Tambah Data</button>
         </div>
         <div>
+            <a href="logo.php" class="btn btn-info me-2"><i class="bi bi-play-circle"></i>🛠️ Pengaturan Slider</a>
             <a href="<?= $link_slider ?>" class="btn btn-info me-2" target="_blank"><i class="bi bi-play-circle"></i>🎬 Play Slider</a>
             <a href="<?= $link_buku ?>" class="btn btn-success" target="_blank"><i class="bi bi-printer"></i>📘 Cetak Buku</a>
         </div>
@@ -234,7 +235,7 @@ $result = mysqli_query($koneksi, "SELECT * FROM tbl_wisudawan $where ORDER BY pr
   </div>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script>
 function editData(data) {
     document.getElementById("id").value = data.id;

@@ -16,6 +16,27 @@
     $SET_JUMP = isset($_GET['jump']) && $_GET['jump'] != "" ? htmlentities($_GET['jump']) : 0;
 ?>
 
+<?php
+$bg = mysqli_fetch_assoc(mysqli_query(
+    $koneksi,
+    "SELECT file_name FROM tbl_slider_background WHERE status='active' ORDER BY id DESC LIMIT 1"
+));
+
+if ($bg) {
+    $path = "img/background/" . $bg['file_name'];
+
+    if (file_exists($path)) {
+        $BACKGROUND = $path;
+    } else {
+        $BACKGROUND = "img/new/bg-default.png";
+    }
+
+} else {
+    $BACKGROUND = "img/new/bg-default.png";
+}
+?>
+
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -28,7 +49,12 @@
     <link rel="stylesheet" href="style/glide/glide.theme.min.css">
     <link rel="stylesheet" href="style/new.css"> <!-- Local CSS -->
 </head>
-<body>
+<body style="
+    background-image: url('<?php echo $BACKGROUND; ?>');
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+">
 
     <!-- Form to select Gelombang and Jump -->
     <div id="_shortcut" class="_shortcut">
@@ -105,11 +131,22 @@
                                     <div class='glide__slide' data-index='$i'>
                                         <div class='_container'>
                                             <div class='_column'>
-                                                <div class='_row _center_align _logo'>
-                                                    <div class=''><img src='./img/new/logo-hukum.png' /></div>   
-                                                    <div class=''><img src='./img/new/logo-manajemen.png' /></div>  
-                                                    <div class=''><img src='./img/new/logo-yayasan.png' /></div> 
-                                                    <div class='_kampus'><img src='./img/new/diktisaintek.png' /></div>
+                                                <div class='_row _center_align _logo'>";
+                                                    $qLogo = mysqli_query($koneksi, "SELECT file_name FROM tbl_slider_logo WHERE status='active' ORDER BY id ASC");
+                                                    $hasLogo = false; // Flag untuk mendeteksi minimal 1 logo valid
+
+                                                    while ($lg = mysqli_fetch_assoc($qLogo)) {
+                                                        $path = "img/logo/" . $lg['file_name'];
+
+                                                        if (file_exists($path)) {
+                                                            echo "<img src='$path' />";
+                                                            $hasLogo = true;
+                                                        }
+                                                    }
+                                                    if (!$hasLogo) {
+                                                        echo "<img src='img/new/diktisaintek.png' />";
+                                                    }
+                                                echo "
                                                 </div>
                                             </div>
                                             <div class='_row'>
