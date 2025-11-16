@@ -12,7 +12,8 @@ yang menghasilkan file **PDF ukuran A5** berisi data wisudawan lengkap dengan fo
 ✅ Menampilkan seluruh data lintas prodi (tanpa parameter)  
 ✅ Generate Buku Wisuda Otomatis **generate PDF ukuran A5** dengan layout rapi   
 ✅ Bisa diunduh langsung sebagai file `Buku_Wisuda_A5.pdf`   
-✅ Disertai halaman **ADMIN**, untuk mengelola data dan sudah tersedia tombol **Cetak Buku Wisuda** serta **Play Slider**
+✅ Disertai halaman **ADMIN**, untuk mengelola data dan sudah tersedia tombol **Cetak Buku Wisuda** serta **Play Slider**, juga sudah dilengkapi dengan pengaturan urutan prodi (untuk mengurutkan prodi yg akan ditampilkan pada slider ataupun buku wisuda)   
+✅ Disertai halaman **PENGATURAN SLIDER**, untuk mengelola logo dan background tanpa harus copy dan ubah code, tinggal upload dan logo tampil   
 
 ---
 
