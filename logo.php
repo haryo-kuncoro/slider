@@ -68,6 +68,7 @@ if (isset($_GET['del_bg'])) {
     <meta charset="UTF-8">
     <title>Pengaturan Slider</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
 </head>
 <body class="bg-light">
 
@@ -76,10 +77,10 @@ if (isset($_GET['del_bg'])) {
 
     <div class="d-flex justify-content-between align-items-center mb-3">
         <div>
-            <a href="admin.php" class="btn btn-info me-2"><i class="bi bi-play-circle"></i>🎓 Data Wisudawan</a>
+            <a href="admin.php" class="btn btn-info me-2">🎓 Data Wisudawan</a>
         </div>
         <div>
-            <a href="index.php" class="btn btn-info me-2" target="_blank"><i class="bi bi-play-circle"></i>🎬 Play Slider</a>
+            <a href="index.php" class="btn btn-info me-2" target="_blank">🎬 Play Slider</a>
         </div>
     </div>
 
@@ -93,7 +94,7 @@ if (isset($_GET['del_bg'])) {
                     <label class="form-label">Pilih file logo</label>
                     <input type="file" name="logo_file" class="form-control" required>
                 </div>
-                <button class="btn btn-primary">Upload</button>
+                <button class="btn btn-primary"><i class="bi bi-cloud-arrow-up"></i> Upload</button>
             </form>
         </div>
     </div>
@@ -115,8 +116,8 @@ if (isset($_GET['del_bg'])) {
                         <td><img src='img/logo/$r[file_name]' height='50'></td>
                         <td><span class='badge bg-".($r['status']=='active'?'success':'secondary')."'>$r[status]</span></td>
                         <td>
-                            <a href='logo.php?toggle_logo=$r[id]' class='btn btn-warning btn-sm'>Toggle</a>
-                            <a href='logo.php?del_logo=$r[id]' class='btn btn-danger btn-sm' onclick='return confirm(\"Hapus logo?\")'>Delete</a>
+                            <a href='logo.php?toggle_logo=$r[id]' class='btn btn-warning btn-sm'><i class='bi bi-toggles'></i> Toggle</a>
+                            <a href='logo.php?del_logo=$r[id]' class='btn btn-danger btn-sm' onclick='return confirm(\"Hapus logo?\")'><i class='bi bi-trash'></i> Delete</a>
                         </td>
                     </tr>";
                 }
@@ -137,7 +138,7 @@ if (isset($_GET['del_bg'])) {
                     <label class="form-label">Pilih file background</label>
                     <input type="file" name="bg_file" class="form-control" required>
                 </div>
-                <button class="btn btn-success">Upload</button>
+                <button class="btn btn-success"><i class="bi bi-cloud-arrow-up"></i> Upload</button>
             </form>
         </div>
     </div>
@@ -159,8 +160,8 @@ if (isset($_GET['del_bg'])) {
                         <td><img src='img/background/$r[file_name]' height='60'></td>
                         <td><span class='badge bg-".($r['status']=='active'?'success':'secondary')."'>$r[status]</span></td>
                         <td>
-                            <a href='logo.php?toggle_bg=$r[id]' class='btn btn-warning btn-sm'>Toggle</a>
-                            <a href='logo.php?del_bg=$r[id]' class='btn btn-danger btn-sm' onclick='return confirm(\"Hapus background?\")'>Delete</a>
+                            <a href='logo.php?toggle_bg=$r[id]' class='btn btn-warning btn-sm'><i class='bi bi-toggles'></i> Toggle</a>
+                            <a href='logo.php?del_bg=$r[id]' class='btn btn-danger btn-sm' onclick='return confirm(\"Hapus background?\")'><i class='bi bi-trash'></i> Delete</a>
                         </td>
                     </tr>";
                 }

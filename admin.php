@@ -1,14 +1,78 @@
 <?php
+session_start();
+if(isset($_SESSION['flash_message'])) {
+    echo "<script>alert('".$_SESSION['flash_message']."');</script>";
+    unset($_SESSION['flash_message']);
+}
+
 include("connection.php");
+
 
 // Ambil daftar prodi unik untuk tombol group
 $prodiResult = mysqli_query($koneksi, "SELECT DISTINCT prodi FROM tbl_wisudawan ORDER BY prodi ASC");
+
+// Cek apakah tbl_prodi_urutan kosong
+$checkUrutan = mysqli_query($koneksi, "SELECT COUNT(*) as total FROM tbl_prodi_urutan");
+$rowCheck = mysqli_fetch_assoc($checkUrutan);
+
+if ($rowCheck['total'] == 0) {
+    // Jika kosong → generate default urutan dari $prodiResult
+    $urut = 1;
+    while($p = mysqli_fetch_assoc($prodiResult)) {
+        $prodiName = $p['prodi'];
+
+        mysqli_query($koneksi, "INSERT INTO tbl_prodi_urutan (nama_prodi, urutan) 
+                                VALUES ('".mysqli_real_escape_string($koneksi,$prodiName)."', $urut)");
+        $urut++;
+    }
+}
+
+if(isset($_POST['reset_prodi_urutan'])) {
+    session_start();
+
+    // Ambil daftar prodi unik dari tbl_wisudawan
+    $prodiResult = mysqli_query($koneksi, "SELECT DISTINCT prodi FROM tbl_wisudawan ORDER BY prodi ASC");
+    $currentProdi = [];
+    while($p = mysqli_fetch_assoc($prodiResult)) {
+        $currentProdi[] = $p['prodi'];
+    }
+
+    // Ambil semua prodi di tbl_prodi_urutan
+    $existing = [];
+    $res = mysqli_query($koneksi, "SELECT nama_prodi FROM tbl_prodi_urutan");
+    while($row = mysqli_fetch_assoc($res)) {
+        $existing[] = $row['nama_prodi'];
+    }
+
+    // Hapus prodi yang tidak ada di tbl_wisudawan
+    $toDelete = array_diff($existing, $currentProdi);
+    if(!empty($toDelete)) {
+        $deleteList = implode("','", array_map(function($v){ return mysqli_real_escape_string($GLOBALS['koneksi'], $v); }, $toDelete));
+        mysqli_query($koneksi, "DELETE FROM tbl_prodi_urutan WHERE nama_prodi IN ('$deleteList')");
+    }
+
+    // Tambahkan prodi baru yang belum ada
+    $urut = mysqli_fetch_assoc(mysqli_query($koneksi, "SELECT COALESCE(MAX(urutan),0)+1 AS nextUrutan FROM tbl_prodi_urutan"))['nextUrutan'];
+    foreach($currentProdi as $prodiName) {
+        if(!in_array($prodiName, $existing)) {
+            mysqli_query($koneksi, "INSERT INTO tbl_prodi_urutan (nama_prodi, urutan) 
+                                    VALUES ('".mysqli_real_escape_string($koneksi,$prodiName)."', $urut)");
+            $urut++;
+        }
+    }
+
+    $_SESSION['flash_message'] = "Urutan prodi berhasil di-reset.";
+
+    header("Location: admin.php" . ($selectedProdi ? "?prodi=" . urlencode($selectedProdi) : ""));
+    exit;
+}
+
 
 // Filter berdasarkan prodi (jika dipilih)
 $selectedProdi = isset($_GET['prodi']) ? $_GET['prodi'] : '';
 
 // Konfigurasi pagination
-$limit = 50;
+$limit = 30;
 $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
 $offset = ($page - 1) * $limit;
 
@@ -57,6 +121,22 @@ if (isset($_GET['delete'])) {
     exit;
 }
 
+// Ambil input JSON dari SortableJS
+if(file_get_contents('php://input')){
+    $data = json_decode(file_get_contents('php://input'), true);
+    if(isset($data['update_order'])){
+        foreach($data['update_order'] as $o){
+            $id = intval($o['id']);
+            $urutan = intval($o['urutan']);
+            mysqli_query($koneksi, "UPDATE tbl_prodi_urutan SET urutan=$urutan WHERE id=$id");
+        }
+        echo "success";
+        exit;
+    }
+}
+
+// ==================
+
 // Hitung total data sesuai filter
 $totalRows = mysqli_num_rows(mysqli_query($koneksi, "SELECT * FROM tbl_wisudawan $where"));
 $totalPages = ceil($totalRows / $limit);
@@ -71,6 +151,7 @@ $result = mysqli_query($koneksi, "SELECT * FROM tbl_wisudawan $where ORDER BY pr
     <meta charset="UTF-8">
     <title>Kelola Wisudawan</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
 </head>
 <body class="bg-light">
 
@@ -99,15 +180,14 @@ $result = mysqli_query($koneksi, "SELECT * FROM tbl_wisudawan $where ORDER BY pr
 
     <div class="d-flex justify-content-between align-items-center mb-3">
         <div>
-            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#formModal" onclick="clearForm()">+ Tambah Data</button>
+            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#formModal" onclick="clearForm()"><i class="bi bi-plus"></i> Tambah Data</button>
         </div>
         <div>
-            <a href="logo.php" class="btn btn-info me-2"><i class="bi bi-play-circle"></i>🛠️ Pengaturan Slider</a>
-            <a href="<?= $link_slider ?>" class="btn btn-info me-2" target="_blank"><i class="bi bi-play-circle"></i>🎬 Play Slider</a>
-            <a href="<?= $link_buku ?>" class="btn btn-success" target="_blank"><i class="bi bi-printer"></i>📘 Cetak Buku</a>
+            <a href="logo.php" class="btn btn-info me-2">🛠️ Pengaturan Slider</a>
+            <a href="<?= $link_slider ?>" class="btn btn-info me-2" target="_blank">🎬 Play Slider</a>
+            <a href="<?= $link_buku ?>" class="btn btn-success" target="_blank">📘 Cetak Buku</a>
         </div>
     </div>
-
 
     <!-- Tabel Data -->
     <div class="table-responsive">
@@ -141,8 +221,8 @@ $result = mysqli_query($koneksi, "SELECT * FROM tbl_wisudawan $where ORDER BY pr
                         <button class="btn btn-sm btn-warning" 
                             data-bs-toggle="modal" 
                             data-bs-target="#formModal"
-                            onclick='editData(<?= json_encode($row) ?>)'>Edit</button>
-                        <a href="?delete=<?= $row['id'] ?>&prodi=<?= urlencode($selectedProdi) ?>" class="btn btn-sm btn-danger" onclick="return confirm('Hapus data ini?')">Hapus</a>
+                            onclick='editData(<?= json_encode($row) ?>)'><i class="bi bi-pencil-square"></i> Edit</button>
+                        <a href="?delete=<?= $row['id'] ?>&prodi=<?= urlencode($selectedProdi) ?>" class="btn btn-sm btn-danger" onclick="return confirm('Hapus data ini?')"><i class="bi bi-trash"></i> Hapus</a>
                     </td>
                 </tr>
             <?php endwhile; endif; ?>
@@ -162,6 +242,29 @@ $result = mysqli_query($koneksi, "SELECT * FROM tbl_wisudawan $where ORDER BY pr
         </ul>
     </nav>
     <?php endif; ?>
+
+    <div class="card mb-5 mt-3">
+        <div class="card-header bg-success text-white d-flex flex-row align-items-center justify-content-between">Pengaturan Urutan Prodi (Drag & Drop)
+            <div class="d-inline ml-auto float-right">
+                <form method="post" style="display:inline;">
+                    <button type="submit" name="reset_prodi_urutan" class="btn btn-warning btn-sm">
+                        <i class="bi bi-arrow-clockwise"></i> Reset Urutan Prodi
+                    </button>
+                </form>
+            </div>
+        </div>
+        <div class="card-body">
+            <div id="prodi-container" class="d-flex flex-wrap gap-2">
+              <?php
+              $q = mysqli_query($koneksi, "SELECT * FROM tbl_prodi_urutan ORDER BY urutan ASC");
+              while ($r = mysqli_fetch_assoc($q)) {
+                  echo "<div class='badge bg-info text-white p-3 rounded draggable-item' data-id='{$r['id']}' style='cursor:grab;'>{$r['nama_prodi']}</div>";
+              }
+              ?>
+          </div>
+          <button id="save-order" class="btn btn-primary mt-3"><i class="bi bi-floppy"></i> Simpan Urutan</button>
+        </div>
+    </div>
 </div>
 
 <!-- Modal Form -->
@@ -229,12 +332,13 @@ $result = mysqli_query($koneksi, "SELECT * FROM tbl_wisudawan $where ORDER BY pr
         </div>
       </div>
       <div class="modal-footer">
-        <button type="submit" name="save" class="btn btn-success">Simpan</button>
+        <button type="submit" name="save" class="btn btn-primary"><i class="bi bi-floppy"></i> Simpan</button>
       </div>
     </form>
   </div>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script>
 function editData(data) {
@@ -249,6 +353,26 @@ function clearForm() {
     document.querySelectorAll('#formModal input').forEach(i => i.value = '');
     document.querySelectorAll('#formModal textarea').forEach(i => i.value = '');
 }
+
+var container = document.getElementById('prodi-container');
+var sortable = Sortable.create(container, {
+    animation: 200,
+    ghostClass: 'bg-secondary',  // efek saat drag
+});
+
+document.getElementById('save-order').addEventListener('click', function(){
+    var urutan = [];
+    container.querySelectorAll('.draggable-item').forEach(function(el, index){
+        urutan.push({id: el.dataset.id, urutan: index+1});
+    });
+
+    fetch('admin.php', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({update_order: urutan})
+    }).then(res => res.text())
+      .then(data => { alert('Urutan berhasil disimpan!'); location.reload(); });
+});
 </script>
 
 </body>

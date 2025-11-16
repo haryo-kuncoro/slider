@@ -9,9 +9,12 @@ $SET_PRODI = isset($_GET['prodi']) ? trim($_GET['prodi']) : "";
 $array_urutan = [];
 
 if (empty($SET_PRODI)) {
-    $array_urutan = ["Hukum", "Manajemen", "Akuntansi"];
+    $q = mysqli_query($koneksi, "SELECT nama_prodi FROM tbl_prodi_urutan ORDER BY urutan ASC");
+
+    while ($r = mysqli_fetch_assoc($q)) {
+        $array_urutan[] = $r['nama_prodi'];
+    }
 } else {
-    // Jika ada nilai, jadikan array tunggal
     $array_urutan = [$SET_PRODI];
 }
 $data_final = [];
