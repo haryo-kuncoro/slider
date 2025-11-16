@@ -155,7 +155,7 @@ $result = mysqli_query($koneksi, "SELECT * FROM tbl_wisudawan $where ORDER BY pr
 </head>
 <body class="bg-light">
 
-<div class="container mt-4">
+<div class="container-fluid px-4 mt-4">
     <h2 class="mb-4 text-center">🎓 Manajemen Data Wisudawan</h2>
 
     <!-- Tombol Group Berdasarkan Prodi -->
