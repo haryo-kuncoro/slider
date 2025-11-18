@@ -6,8 +6,6 @@ if(isset($_SESSION['flash_message'])) {
 }
 
 include("connection.php");
-require __DIR__ . '/vendor/autoload.php';
-
 
 // Ambil daftar prodi unik untuk tombol group
 $prodiResult = mysqli_query($koneksi, "SELECT DISTINCT prodi FROM tbl_wisudawan ORDER BY prodi ASC");
@@ -116,6 +114,17 @@ if (isset($_POST['save'])) {
 
 // ===================== IMPORT EXCEL =====================
 if (isset($_POST['import_excel'])) {
+    // CEK FOLDER vendor ADA ATAU TIDAK
+    if (!is_dir(__DIR__ . '/vendor')) {
+        echo "<script>
+            alert('Folder vendor tidak ditemukan!\\nSilakan jalankan: composer install');
+            window.location.href = 'admin.php';
+        </script>";
+        exit;
+    }
+
+    require __DIR__ . '/vendor/autoload.php';  // load composer
+
     if (isset($_FILES['file_excel']['name']) && $_FILES['file_excel']['name'] != "") {
         
         $file_tmp  = $_FILES['file_excel']['tmp_name'];
@@ -224,12 +233,13 @@ $result = mysqli_query($koneksi, "SELECT * FROM tbl_wisudawan $where ORDER BY pr
 
     <div class="d-flex justify-content-between align-items-center mb-3">
         <div>
-            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#formModal" onclick="clearForm()"><i class="bi bi-plus"></i> Tambah Data</button>
+            <button class="btn btn-primary me-2" data-bs-toggle="modal" data-bs-target="#formModal" onclick="clearForm()"><i class="bi bi-plus"></i> Tambah Data</button>
             <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#modalImport">
                 <i class="bi bi-file-earmark-excel"></i> Import Excel
             </button>
         </div>
         <div>
+            <button class="btn btn-warning me-2" data-bs-toggle="modal" data-bs-target="#modalFotoCheck"><i class="bi bi-image"></i> Cek Foto</button>
             <a href="logo.php" class="btn btn-info me-2">🛠️ Pengaturan Slider</a>
             <a href="<?= $link_slider ?>" class="btn btn-info me-2" target="_blank">🎬 Play Slider</a>
             <a href="<?= $link_buku ?>" class="btn btn-success" target="_blank">📘 Cetak Buku</a>
@@ -408,12 +418,80 @@ $result = mysqli_query($koneksi, "SELECT * FROM tbl_wisudawan $where ORDER BY pr
             <i class="bi bi-file-earmark-excel"></i> Download Sample Excel
         </a>
 
-        <button type="submit" name="import_excel" class="btn btn-sm btn-success">
+        <button type="submit" name="import_excel" class="btn btn-sm btn-primary">
           <i class="bi bi-upload"></i> Import
         </button>
       </div>
 
     </form>
+  </div>
+</div>
+
+<!-- Modal Cek Foto Wisudawan -->
+<div class="modal fade" id="modalFotoCheck" tabindex="-1">
+  <div class="modal-dialog modal-lg modal-dialog-scrollable">
+    <div class="modal-content">
+
+      <div class="modal-header bg-primary text-white">
+        <h5 class="modal-title">📷 Cek Ketersediaan Foto Wisudawan</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+
+      <div class="modal-body">
+        <label class="mb-2">Foto harus berada di dalam folder "photo/[tahun sekarang]/", contoh : "photo/2025/"</label>
+
+        <table class="table table-bordered table-striped">
+          <thead class="table-dark text-center">
+            <tr>
+              <th>No</th>
+              <th>NIM</th>
+              <th>Nama</th>
+              <th>Prodi</th>
+              <th>Foto</th>
+            </tr>
+          </thead>
+          <tbody>
+          <?php
+          // Ambil ulang data sesuai prodi agar modal ini tidak terganggu pagination
+          $fotoQuery = mysqli_query($koneksi, "SELECT * FROM tbl_wisudawan $where ORDER BY prodi ASC, urutan ASC");
+
+          $n = 1;
+          while ($w = mysqli_fetch_assoc($fotoQuery)) {
+              // Lokasi file foto
+              $year = date("Y");
+              $fotoPath = "photo/$year/" . $w['nirm'] . ".jpg";  
+
+              // Cek file
+              $exists = file_exists($fotoPath);
+
+              echo "<tr>
+                  <td class='text-center'>{$n}</td>
+                  <td class='text-center'>{$w['nirm']}</td>
+                  <td>{$w['nama']}</td>
+                  <td class='text-center'>{$w['prodi']}</td>
+                  <td class='text-center'>";
+
+              if ($exists) {
+                  echo "<span class='badge bg-success'>✔ Ada</span>";
+              } else {
+                  echo "<span class='badge bg-danger'>❌ Tidak Ada</span>";
+              }
+
+              echo "</td></tr>";
+
+              $n++;
+          }
+          ?>
+          </tbody>
+        </table>
+
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
+      </div>
+
+    </div>
   </div>
 </div>
 

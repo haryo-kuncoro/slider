@@ -10,9 +10,10 @@ yang menghasilkan file **PDF ukuran A5** berisi data wisudawan lengkap dengan fo
 ✅ Slider Wisudawan Berbasis Website  
 ✅ Cek foto apakah sudah exist/tersedia atau belum    
 ✅ Menampilkan seluruh data lintas prodi (tanpa parameter)  
+✅ Cek seluruh data foto wisudawan  
 ✅ Generate Buku Wisuda Otomatis **generate PDF ukuran A5** dengan layout rapi   
 ✅ Bisa diunduh langsung sebagai file `Buku_Wisuda_A5.pdf`   
-✅ Disertai halaman **ADMIN**, untuk mengelola data dan sudah tersedia tombol **Cetak Buku Wisuda** serta **Play Slider**, juga sudah dilengkapi dengan pengaturan urutan prodi (untuk mengurutkan prodi yg akan ditampilkan pada slider ataupun buku wisuda)   
+✅ Disertai halaman **ADMIN**, untuk mengelola data dan sudah tersedia tombol **Cetak Buku Wisuda** untuk export dalam bentuk pdf, serta **Play Slider** untuk menampilkan slider berdasarkan prodi atau keseluruhan. Juga sudah dilengkapi dengan **Import Data Wisudawan by Excel** untuk mempermudah upload data wisudawan tanpa harus insert ke database langsung. Ada pengaturan **Urutan Prodi** juga (untuk mengurutkan prodi yg akan ditampilkan pada slider ataupun buku wisuda)   
 ✅ Disertai halaman **PENGATURAN SLIDER**, untuk mengelola logo dan background tanpa harus copy dan ubah code, tinggal upload dan logo tampil   
 
 ---

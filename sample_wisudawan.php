@@ -1,4 +1,13 @@
 <?php
+// CEK FOLDER vendor
+if (!is_dir(__DIR__ . '/vendor')) {
+    echo "<script>
+        alert('Folder vendor tidak ditemukan!\\nSilakan jalankan: composer install');
+        window.location.href = 'admin.php';
+        </script>";
+    exit;
+}
+
 require __DIR__ . '/vendor/autoload.php';
 
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
