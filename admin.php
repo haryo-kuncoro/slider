@@ -6,6 +6,7 @@ if(isset($_SESSION['flash_message'])) {
 }
 
 include("connection.php");
+require __DIR__ . '/vendor/autoload.php';
 
 
 // Ambil daftar prodi unik untuk tombol group
@@ -113,6 +114,51 @@ if (isset($_POST['save'])) {
     exit;
 }
 
+// ===================== IMPORT EXCEL =====================
+if (isset($_POST['import_excel'])) {
+    if (isset($_FILES['file_excel']['name']) && $_FILES['file_excel']['name'] != "") {
+        
+        $file_tmp  = $_FILES['file_excel']['tmp_name'];
+        $reader    = new \PhpOffice\PhpSpreadsheet\Reader\Xlsx();
+        $spreadsheet = $reader->load($file_tmp);
+        $sheet     = $spreadsheet->getActiveSheet()->toArray(null, true, true, true);
+
+        $rowStart = 2; // baris 1 = header
+        $inserted = 0;
+
+        for ($i = $rowStart; $i <= count($sheet); $i++) {
+
+            $urutan = $sheet[$i]['A'];
+            $nirm = $sheet[$i]['B'];
+            $nama = $sheet[$i]['C'];
+            $ortu_laki = $sheet[$i]['D'];
+            $ortu_perempuan = $sheet[$i]['E'];
+            $tmp_tgl_lahir = $sheet[$i]['F'];
+            $asal_sekolah = $sheet[$i]['G'];
+            $alamat = $sheet[$i]['H'];
+            $ipk = $sheet[$i]['I'];
+            $judul = $sheet[$i]['J'];
+            $keterangan = $sheet[$i]['K'];
+            $prodi = $sheet[$i]['L'];
+            $gelombang = $sheet[$i]['M'];
+
+            if (trim($nirm) == "") continue; // skip baris kosong
+
+            mysqli_query($koneksi, "INSERT INTO tbl_wisudawan
+                (urutan, nirm, nama, ortu_laki, ortu_perempuan, tmp_tgl_lahir, asal_sekolah, alamat, ipk, judul, keterangan, prodi, gelombang)
+                VALUES
+                ('{$urutan}','{$nirm}','{$nama}','{$ortu_laki}','{$ortu_perempuan}','{$tmp_tgl_lahir}','{$asal_sekolah}','{$alamat}','{$ipk}','{$judul}','{$keterangan}','{$prodi}','{$gelombang}')
+            ");
+
+            $inserted++;
+        }
+
+        $_SESSION['flash_message'] = "Import berhasil! $inserted data ditambahkan.";
+        header("Location: admin.php");
+        exit;
+    }
+}
+
 // Proses delete
 if (isset($_GET['delete'])) {
     $id = $_GET['delete'];
@@ -134,8 +180,6 @@ if(file_get_contents('php://input')){
         exit;
     }
 }
-
-// ==================
 
 // Hitung total data sesuai filter
 $totalRows = mysqli_num_rows(mysqli_query($koneksi, "SELECT * FROM tbl_wisudawan $where"));
@@ -181,6 +225,9 @@ $result = mysqli_query($koneksi, "SELECT * FROM tbl_wisudawan $where ORDER BY pr
     <div class="d-flex justify-content-between align-items-center mb-3">
         <div>
             <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#formModal" onclick="clearForm()"><i class="bi bi-plus"></i> Tambah Data</button>
+            <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#modalImport">
+                <i class="bi bi-file-earmark-excel"></i> Import Excel
+            </button>
         </div>
         <div>
             <a href="logo.php" class="btn btn-info me-2">🛠️ Pengaturan Slider</a>
@@ -334,6 +381,38 @@ $result = mysqli_query($koneksi, "SELECT * FROM tbl_wisudawan $where ORDER BY pr
       <div class="modal-footer">
         <button type="submit" name="save" class="btn btn-primary"><i class="bi bi-floppy"></i> Simpan</button>
       </div>
+    </form>
+  </div>
+</div>
+
+<!-- Modal Import Excel -->
+<div class="modal fade" id="modalImport" tabindex="-1">
+  <div class="modal-dialog">
+    <form method="POST" enctype="multipart/form-data" class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Import Data Wisudawan dari Excel</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+
+      <div class="modal-body">
+        <label>Upload File Excel (.xlsx)</label>
+        <input type="file" name="file_excel" class="form-control" accept=".xlsx" required>
+
+        <small class="text-muted">
+          Pastikan format kolom: urutan, nirm, nama, ortu_laki, ortu_perempuan, tmp_tgl_lahir, asal_sekolah, alamat, ipk, judul, keterangan, prodi, gelombang
+        </small>
+      </div>
+
+      <div class="modal-footer">
+        <a href="sample_wisudawan.php" class="btn btn-success btn-sm">
+            <i class="bi bi-file-earmark-excel"></i> Download Sample Excel
+        </a>
+
+        <button type="submit" name="import_excel" class="btn btn-sm btn-success">
+          <i class="bi bi-upload"></i> Import
+        </button>
+      </div>
+
     </form>
   </div>
 </div>
