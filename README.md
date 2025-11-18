@@ -27,8 +27,8 @@ http://localhost/slider/admin.php
 ## ⚙️ Cara Menggunakan Slider Wisudawan
 
 1. Pastikan web server lokal aktif (XAMPP / Laragon / dsb)
-2. Letakkan seluruh file di folder `www/slider/`
-3. Pastikan folder `photo/` berisi foto-foto wisudawan (misal: `photo/2025/20210xxx.jpg`)
+2. Letakkan seluruh file di folder `slider` pada host anda. `htdocs/slider/` jika XAMPP atau `www/slider/` jika anda menggunakan Laragon
+3. Pastikan folder `photo/[tahun sekarang]` berisi foto-foto wisudawan (misal: `photo/2025/20210xxx.jpg`)
 4. Pastikan file `db_slider.sql` sudah diimport ke dalam database
 5. Anda dapat merubah data melalui phpmyadmin ada dbever mana yg lebih mudah
 
@@ -39,31 +39,8 @@ http://localhost/slider/index.php
 
 ---
 
-## ⚙️ Cara Menggunakan Generator Buku Wisuda
+## ⚙️ Cara Menggunakan Import Data Wisudawan by Excel
 
-1. Pastikan web server lokal aktif (XAMPP / Laragon / dsb)
-2. Letakkan seluruh file di folder `www/slider/`
-3. Pastikan folder `photo/` berisi foto-foto wisudawan (misal: `photo/2025/20210xxx.jpg`)
-4. Pastikan file `data-buku.php` mengembalikan JSON seperti contoh berikut:
-
-```json
-[
-  {
-    "nourut": "1",
-    "nirm": "2021020080",
-    "nama": "Wisudawan 01",
-    "tmpttl": "Medan / 25 Februari 1995",
-    "asalsekolah": "",
-    "alamat": "",
-    "ayah": "Ayah 01",
-    "ibu": "Ibu 01",
-    "judul": "Sistem Pendukung Keputusan untuk Menentukan Pemberian Reward Pemasok Terbaik Pada PT. Midi Utama Indonesia Tbk Menggunakan Metode Moosra",
-    "foto": "photo/2025/2021020080.jpg",
-    "prodi": "Hukum"
-  }
-]
-```
-
-### Cara Menjalankan Generator Buku Wisuda
-
-http://localhost/slider/buku-js.html
+1. Pastikan composer phpoffice sudah diinstal, jika belum silahkan jalankan `composer install` pada terminal
+2. Saat akan import, anda bisa doenload sample excel, dan anda tinggal meletakkan data wisudawan berdasarkan format kolom yg sudah ditetapkan
+3. Selnajutnya upload file excel yg sudah disiapkan, tekan `Import`
