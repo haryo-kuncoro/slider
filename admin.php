@@ -116,55 +116,132 @@ if (isset($_POST['save'])) {
 if (isset($_POST['import_excel'])) {
     // CEK FOLDER vendor ADA ATAU TIDAK
     if (!is_dir(__DIR__ . '/vendor')) {
+
         echo "<script>
             alert('Folder vendor tidak ditemukan!\\nSilakan jalankan: composer install');
             window.location.href = 'admin.php';
         </script>";
+
         exit;
     }
 
-    require __DIR__ . '/vendor/autoload.php';  // load composer
+    require __DIR__ . '/vendor/autoload.php'; // load composer
 
     if (isset($_FILES['file_excel']['name']) && $_FILES['file_excel']['name'] != "") {
-        
-        $file_tmp  = $_FILES['file_excel']['tmp_name'];
-        $reader    = new \PhpOffice\PhpSpreadsheet\Reader\Xlsx();
-        $spreadsheet = $reader->load($file_tmp);
-        $sheet     = $spreadsheet->getActiveSheet()->toArray(null, true, true, true);
 
-        $rowStart = 2; // baris 1 = header
-        $inserted = 0;
+        $file_tmp = $_FILES['file_excel']['tmp_name'];
 
-        for ($i = $rowStart; $i <= count($sheet); $i++) {
+        try {
 
-            $urutan = $sheet[$i]['A'];
-            $nirm = $sheet[$i]['B'];
-            $nama = $sheet[$i]['C'];
-            $ortu_laki = $sheet[$i]['D'];
-            $ortu_perempuan = $sheet[$i]['E'];
-            $tmp_tgl_lahir = $sheet[$i]['F'];
-            $asal_sekolah = $sheet[$i]['G'];
-            $alamat = $sheet[$i]['H'];
-            $ipk = $sheet[$i]['I'];
-            $judul = $sheet[$i]['J'];
-            $keterangan = $sheet[$i]['K'];
-            $prodi = $sheet[$i]['L'];
-            $gelombang = $sheet[$i]['M'];
+            $reader = new \PhpOffice\PhpSpreadsheet\Reader\Xlsx();
 
-            if (trim($nirm) == "") continue; // skip baris kosong
+            // Hanya membaca data, tidak perlu formula calculation
+            $reader->setReadDataOnly(true);
 
-            mysqli_query($koneksi, "INSERT INTO tbl_wisudawan
-                (urutan, nirm, nama, ortu_laki, ortu_perempuan, tmp_tgl_lahir, asal_sekolah, alamat, ipk, judul, keterangan, prodi, gelombang)
+            $spreadsheet = $reader->load($file_tmp);
+
+            // Ambil sheet pertama, bukan berdasarkan nama Sheet1
+            $sheet = $spreadsheet->getSheet(0)->toArray(null, true, true, true);
+
+            $rowStart = 2; // baris 1 = header
+            $inserted = 0;
+
+            // Prepared Statement
+            $stmt = mysqli_prepare($koneksi, "
+                INSERT INTO tbl_wisudawan
+                (
+                    urutan,
+                    nirm,
+                    nama,
+                    ortu_laki,
+                    ortu_perempuan,
+                    tmp_tgl_lahir,
+                    asal_sekolah,
+                    alamat,
+                    ipk,
+                    judul,
+                    keterangan,
+                    prodi,
+                    gelombang
+                )
                 VALUES
-                ('{$urutan}','{$nirm}','{$nama}','{$ortu_laki}','{$ortu_perempuan}','{$tmp_tgl_lahir}','{$asal_sekolah}','{$alamat}','{$ipk}','{$judul}','{$keterangan}','{$prodi}','{$gelombang}')
+                (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             ");
 
-            $inserted++;
-        }
+            if (!$stmt) {
+                throw new Exception("Gagal membuat prepared statement: " . mysqli_error($koneksi));
+            }
 
-        $_SESSION['flash_message'] = "Import berhasil! $inserted data ditambahkan.";
-        header("Location: admin.php");
-        exit;
+            for ($i = $rowStart; $i <= count($sheet); $i++) {
+
+                $urutan         = $sheet[$i]['A'] ?? '';
+                $nirm           = $sheet[$i]['B'] ?? '';
+                $nama           = $sheet[$i]['C'] ?? '';
+                $ortu_laki      = $sheet[$i]['D'] ?? '';
+                $ortu_perempuan = $sheet[$i]['E'] ?? '';
+                $tmp_tgl_lahir  = $sheet[$i]['F'] ?? '';
+                $asal_sekolah   = $sheet[$i]['G'] ?? '';
+                $alamat         = $sheet[$i]['H'] ?? '';
+                $ipk            = $sheet[$i]['I'] ?? '';
+                $judul          = $sheet[$i]['J'] ?? '';
+                $keterangan     = $sheet[$i]['K'] ?? '';
+                $prodi          = $sheet[$i]['L'] ?? '';
+                $gelombang      = $sheet[$i]['M'] ?? '';
+
+                // skip baris kosong
+                if (trim($nirm) == "") {
+                    continue;
+                }
+
+                /*
+                 * Semua data dikirim melalui parameter.
+                 * Jadi petik satu seperti O'Brien aman.
+                 */
+                mysqli_stmt_bind_param(
+                    $stmt,
+                    "sssssssssssss",
+                    $urutan,
+                    $nirm,
+                    $nama,
+                    $ortu_laki,
+                    $ortu_perempuan,
+                    $tmp_tgl_lahir,
+                    $asal_sekolah,
+                    $alamat,
+                    $ipk,
+                    $judul,
+                    $keterangan,
+                    $prodi,
+                    $gelombang
+                );
+
+                if (!mysqli_stmt_execute($stmt)) {
+
+                    throw new Exception(
+                        "Gagal import baris $i (NIRM: $nirm): " .
+                        mysqli_stmt_error($stmt)
+                    );
+                }
+
+                $inserted++;
+            }
+
+            mysqli_stmt_close($stmt);
+
+            $_SESSION['flash_message'] =
+                "Import berhasil! $inserted data ditambahkan.";
+
+            header("Location: admin.php");
+            exit;
+
+        } catch (Exception $e) {
+
+            $_SESSION['flash_message'] =
+                "Import gagal: " . $e->getMessage();
+
+            header("Location: admin.php");
+            exit;
+        }
     }
 }
 
