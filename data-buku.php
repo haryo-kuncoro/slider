@@ -2,7 +2,7 @@
 require_once("connection.php");
 
 $show_upload_no_photo = '0';
-$total_image_perpage = 6;
+$total_image_perpage = 5;
 
 // Ambil parameter prodi
 $SET_PRODI = isset($_GET['prodi']) ? trim($_GET['prodi']) : "";
@@ -35,7 +35,9 @@ foreach ($array_urutan as $prodiforshow) {
             $NMAYAH = $r['ortu_laki'] ?? '';
             $NMIBU = $r['ortu_perempuan'] ?? '';
             $JUDUL = $r['judul'] ?? '';
-            $GAMBAR = file_exists("photo/2025/$NIRM.jpg") ? "photo/2025/$NIRM.jpg" : "photo/alumni.jpg";
+            $IPK = $r['ipk'] ?? '';
+            $KETERANGAN_IPK = $r['keterangan'] ?? '';
+            $GAMBAR = file_exists("photo/2026/$NIRM.jpg") ? "photo/2026/$NIRM.jpg" : "photo/alumni.jpg";
 
             $data_final[] = [
                 "nourut" => $NOURUT,
@@ -46,6 +48,8 @@ foreach ($array_urutan as $prodiforshow) {
                 "alamat" => $ALAMAT,
                 "ayah" => $NMAYAH,
                 "ibu" => $NMIBU,
+                "ipk" => $IPK,
+                "keterangan_ipk" => $KETERANGAN_IPK,
                 "judul" => $JUDUL,
                 "foto" => $GAMBAR,
                 "prodi" => $PRD

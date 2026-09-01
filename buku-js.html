@@ -1,183 +1,1457 @@
 <!DOCTYPE html>
 <html lang="id">
+
 <head>
-  <meta charset="utf-8">
-  <title>Buku Wisuda - A5</title>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-  <style>
-    body { font-family: Arial, sans-serif; text-align: center; margin-top: 30px; }
-    button { padding: 10px 20px; font-size: 14px; cursor: pointer; }
-    #loading { display: none; margin-top: 15px; font-size: 13px; color: gray; }
-  </style>
+
+    <meta charset="utf-8">
+
+    <title>Buku Wisuda - A5</title>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+    <style>
+
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin-top: 30px;
+        }
+
+        button {
+            padding: 10px 20px;
+            font-size: 14px;
+            cursor: pointer;
+        }
+
+        #loading {
+            display: none;
+            margin-top: 15px;
+            font-size: 13px;
+            color: gray;
+        }
+
+    </style>
+
 </head>
+
+
 <body>
-  <h2 id="judul-buku">Buku Wisuda</h2>
-  <p id="info-buku">Menampilkan semua data dari <b>data-buku.php</b></p>
-  <button id="generate" class="btn">📘 Generate PDF Semua Prodi</button>
-  <div id="loading">⏳ Sedang memproses data wisuda...</div>
 
-  <script>
-    const { jsPDF } = window.jspdf;
 
-    // Fungsi ambil parameter dari URL
-    function getQueryParam(param) {
-      const urlParams = new URLSearchParams(window.location.search);
-      return urlParams.get(param) || "";
-    }
+    <h2 id="judul-buku">
+        Buku Wisuda
+    </h2>
 
-    // Ambil nilai prodi dari URL (misal ?prodi=Hukum)
-    const selectedProdi = getQueryParam("prodi");
 
-    // Elemen-elemen yang mau diubah
-    const judul = document.getElementById("judul-buku");
-    const info = document.getElementById("info-buku");
-    const tombol = document.getElementById("generate");
+    <p id="info-buku">
+        Menampilkan semua data dari
+        <b>data-buku.php</b>
+    </p>
 
-    // Jika ada prodi di URL
-    if (selectedProdi) {
-      judul.textContent = `Buku Wisuda – ${selectedProdi}`;
-      info.innerHTML = `Menampilkan data wisudawan untuk <b>Program Studi ${selectedProdi}</b> dari <b>data-buku.php?prodi=${selectedProdi}</b>`;
-      tombol.textContent = `📘 Generate PDF Prodi ${selectedProdi}`;
-    } else {
-      judul.textContent = "Buku Wisuda – Semua Prodi";
-      info.innerHTML = `Menampilkan semua data wisudawan dari <b>data-buku.php</b>`;
-      tombol.textContent = "📘 Generate PDF Semua Prodi";
-    }
 
-    async function getBase64Image(url) {
-      try {
-        const res = await fetch(url);
-        const blob = await res.blob();
-        return await new Promise((resolve, reject) => {
-          const reader = new FileReader();
-          reader.onloadend = () => resolve(reader.result);
-          reader.onerror = reject;
-          reader.readAsDataURL(blob);
-        });
-      } catch (err) {
-        console.warn("Gagal ambil gambar:", url);
+    <button id="generate">
+        📘 Generate PDF Semua Prodi
+    </button>
+
+
+    <div id="loading">
+        ⏳ Sedang memproses data wisuda...
+    </div>
+
+
+
+<script>
+
+
+/* =========================================================
+   JSPDF
+   ========================================================= */
+
+const { jsPDF } = window.jspdf;
+
+
+
+/* =========================================================
+   FUNGSI AMBIL PARAMETER URL
+   ========================================================= */
+
+function getQueryParam(param) {
+
+    const urlParams =
+        new URLSearchParams(
+            window.location.search
+        );
+
+    return urlParams.get(param) || "";
+}
+
+
+
+/* =========================================================
+   PRODI DARI URL
+   =========================================================
+   
+   Contoh:
+   
+   ?prodi=Sistem%20Informasi
+   
+   selectedProdi hanya digunakan untuk FILTER DATA.
+   
+   Nama prodi yang ditampilkan di PDF akan diambil
+   langsung dari mhs.prodi.
+   
+   ========================================================= */
+
+const selectedProdi =
+    getQueryParam("prodi");
+
+
+
+/* =========================================================
+   ELEMENT HTML
+   ========================================================= */
+
+const judul =
+    document.getElementById(
+        "judul-buku"
+    );
+
+const info =
+    document.getElementById(
+        "info-buku"
+    );
+
+const tombol =
+    document.getElementById(
+        "generate"
+    );
+
+
+
+/* =========================================================
+   TAMPILAN HALAMAN HTML
+   ========================================================= */
+
+if (selectedProdi) {
+
+    judul.textContent =
+        `Buku Wisuda – ${selectedProdi}`;
+
+    info.innerHTML =
+        `Menampilkan data wisudawan untuk
+        <b>Program Studi ${selectedProdi}</b>
+        dari
+        <b>data-buku.php?prodi=${selectedProdi}</b>`;
+
+    tombol.textContent =
+        `📘 Generate PDF Prodi ${selectedProdi}`;
+
+} else {
+
+    judul.textContent =
+        "Buku Wisuda – Semua Prodi";
+
+    info.innerHTML =
+        `Menampilkan semua data wisudawan
+        dari <b>data-buku.php</b>`;
+
+    tombol.textContent =
+        "📘 Generate PDF Semua Prodi";
+}
+
+
+
+/* =========================================================
+   AMBIL GAMBAR SEBAGAI BASE64
+   ========================================================= */
+
+async function getImage(url) {
+
+    try {
+
+        const response =
+            await fetch(url);
+
+        if (!response.ok) {
+
+            throw new Error(
+                "Gambar tidak ditemukan"
+            );
+        }
+
+
+        const blob =
+            await response.blob();
+
+
+        return await new Promise(
+            (resolve, reject) => {
+
+                const reader =
+                    new FileReader();
+
+
+                reader.onloadend =
+                    () => {
+
+                        resolve(
+                            reader.result
+                        );
+
+                    };
+
+
+                reader.onerror =
+                    reject;
+
+
+                reader.readAsDataURL(
+                    blob
+                );
+
+            }
+        );
+
+    } catch (error) {
+
+        console.warn(
+            "Gagal mengambil gambar:",
+            url
+        );
+
         return null;
-      }
+    }
+}
+
+
+
+/* =========================================================
+   BUAT FOTO MENJADI LINGKARAN
+   ========================================================= */
+
+async function getCircularImage(url) {
+
+    try {
+
+        /*
+         * Ambil gambar
+         */
+
+        const base64 =
+            await getImage(url);
+
+
+        if (!base64) {
+
+            return null;
+        }
+
+
+        /*
+         * Buat object Image
+         */
+
+        const img =
+            new Image();
+
+
+        img.src =
+            base64;
+
+
+        /*
+         * Tunggu gambar selesai loading
+         */
+
+        await new Promise(
+            (resolve, reject) => {
+
+                img.onload =
+                    resolve;
+
+                img.onerror =
+                    reject;
+
+            }
+        );
+
+
+        /*
+         * Ukuran canvas
+         */
+
+        const size =
+            500;
+
+
+        const canvas =
+            document.createElement(
+                "canvas"
+            );
+
+
+        canvas.width =
+            size;
+
+        canvas.height =
+            size;
+
+
+        const ctx =
+            canvas.getContext(
+                "2d"
+            );
+
+
+        /*
+         * Bersihkan canvas
+         */
+
+        ctx.clearRect(
+            0,
+            0,
+            size,
+            size
+        );
+
+
+        /*
+         * Buat clipping lingkaran
+         */
+
+        ctx.beginPath();
+
+        ctx.arc(
+            size / 2,
+            size / 2,
+            size / 2,
+            0,
+            Math.PI * 2
+        );
+
+        ctx.closePath();
+
+        ctx.clip();
+
+
+        /*
+         * Crop gambar menjadi persegi
+         */
+
+        const minSize =
+            Math.min(
+                img.width,
+                img.height
+            );
+
+
+        const sx =
+            (img.width -
+                minSize) / 2;
+
+
+        const sy =
+            (img.height -
+                minSize) / 2;
+
+
+        /*
+         * Gambar ke canvas
+         */
+
+        ctx.drawImage(
+            img,
+            sx,
+            sy,
+            minSize,
+            minSize,
+            0,
+            0,
+            size,
+            size
+        );
+
+
+        /*
+         * Kembalikan PNG transparan
+         */
+
+        return canvas.toDataURL(
+            "image/png"
+        );
+
+    } catch (error) {
+
+        console.warn(
+            "Gagal membuat foto lingkaran:",
+            url
+        );
+
+        return null;
+    }
+}
+
+
+
+/* =========================================================
+   HEADER PDF
+   =========================================================
+   
+   namaProdi DIAMBIL DARI JSON
+   
+   ========================================================= */
+
+async function drawHeader(
+    doc,
+    namaProdi
+) {
+
+
+    const pageWidth =
+        doc.internal.pageSize.getWidth();
+
+
+    const margin =
+        10;
+
+
+
+    /* =====================================================
+       LOGO
+       ===================================================== */
+
+    const logoUrl =
+        "logo.png";
+
+
+    let logo =
+        null;
+
+
+    try {
+
+        logo =
+            await getImage(
+                logoUrl
+            );
+
+    } catch (e) {
+
+        logo =
+            null;
     }
 
-    document.getElementById("generate").addEventListener("click", async () => {
-      const loading = document.getElementById("loading");
-      loading.style.display = "block";
 
-      try {
-        // === panggil data-buku.php sesuai prodi ===
-        let url = "data-buku.php";
-        if (selectedProdi) {
-          url += "?prodi=" + encodeURIComponent(selectedProdi);
+    const logoX =
+        margin;
+
+
+    const logoY =
+        8;
+
+
+    const logoSize =
+        10;
+
+
+    if (logo) {
+
+        doc.addImage(
+            logo,
+            "PNG",
+            logoX,
+            logoY,
+            logoSize,
+            logoSize
+        );
+
+    } else {
+
+        /*
+         * Placeholder jika logo tidak ada
+         */
+
+        doc.setLineWidth(
+            0.3
+        );
+
+
+        doc.circle(
+            logoX + 5,
+            logoY + 5,
+            4,
+            "S"
+        );
+
+    }
+
+
+
+    /* =====================================================
+       NAMA INSTITUSI
+       ===================================================== */
+
+    doc.setFont(
+        "helvetica",
+        "bold"
+    );
+
+
+    doc.setFontSize(
+        9
+    );
+
+
+    doc.text(
+        "STMIK Triguna Dharma",
+        margin + 15,
+        14
+    );
+
+
+
+    /* =====================================================
+       NAMA PRODI
+       =====================================================
+       
+       DIAMBIL DARI:
+       
+       mhs.prodi
+       
+       ===================================================== */
+
+    doc.setFont(
+        "helvetica",
+        "normal"
+    );
+
+
+    /*
+     * Jika prodi panjang,
+     * gunakan font lebih kecil
+     */
+
+    if (
+        namaProdi &&
+        namaProdi.length > 25
+    ) {
+
+        doc.setFontSize(
+            7
+        );
+
+    } else {
+
+        doc.setFontSize(
+            8
+        );
+
+    }
+
+
+    doc.text(
+        namaProdi || "",
+        pageWidth - margin,
+        14,
+        {
+            align: "right"
         }
+    );
 
-        const response = await fetch(url);
-        if (!response.ok) throw new Error("Gagal memuat " + url);
 
-        const data = await response.json();
 
-        if (!Array.isArray(data) || data.length === 0) {
-          alert("❌ Tidak ada data wisudawan ditemukan.");
-          loading.style.display = "none";
-          return;
+    /* =====================================================
+       GARIS HEADER
+       ===================================================== */
+
+    doc.setLineWidth(
+        0.3
+    );
+
+
+    doc.line(
+        margin,
+        20,
+        pageWidth - margin,
+        20
+    );
+
+
+
+    /* =====================================================
+       POSISI AWAL DATA
+       ===================================================== */
+
+    return 24;
+}
+
+
+
+/* =========================================================
+   GAMBAR SATU WISUDAWAN
+   ========================================================= */
+
+async function drawStudent(
+    doc,
+    mhs,
+    y,
+    positionIndex
+) {
+
+
+    const pageWidth =
+        doc.internal.pageSize.getWidth();
+
+
+    const margin =
+        10;
+
+
+
+    /* =====================================================
+       UKURAN FOTO
+       ===================================================== */
+
+    const fotoSize =
+        28;
+
+
+
+    /* =====================================================
+       POSISI FOTO
+       =====================================================
+       
+       0 = kiri
+       1 = kanan
+       2 = kiri
+       3 = kanan
+       4 = kiri
+       
+       positionIndex DI-RESET setiap 5 data.
+       
+       ===================================================== */
+
+    const fotoKiri =
+        positionIndex % 2 === 0;
+
+
+    let fotoX;
+
+
+    if (fotoKiri) {
+
+        fotoX =
+            margin;
+
+    } else {
+
+        fotoX =
+            pageWidth -
+            margin -
+            fotoSize;
+
+    }
+
+
+
+    /* =====================================================
+       FOTO
+       ===================================================== */
+
+    const foto =
+        await getCircularImage(
+            mhs.foto
+        );
+
+
+    if (foto) {
+
+        doc.addImage(
+            foto,
+            "PNG",
+            fotoX,
+            y,
+            fotoSize,
+            fotoSize
+        );
+
+    } else {
+
+        /*
+         * Lingkaran kosong jika foto tidak ada
+         */
+
+        doc.setLineWidth(
+            0.4
+        );
+
+
+        doc.circle(
+            fotoX +
+                fotoSize / 2,
+            y +
+                fotoSize / 2,
+            fotoSize / 2,
+            "S"
+        );
+
+    }
+
+
+
+    /* =====================================================
+       JARAK FOTO DENGAN TEXT
+       ===================================================== */
+
+    const gap =
+        5;
+
+
+    let textX;
+
+
+    if (fotoKiri) {
+
+        /*
+         * FOTO KIRI
+         * TEXT KANAN
+         */
+
+        textX =
+            fotoX +
+            fotoSize +
+            gap;
+
+    } else {
+
+        /*
+         * FOTO KANAN
+         * TEXT KIRI
+         */
+
+        textX =
+            margin;
+
+    }
+
+
+
+    /* =====================================================
+       LEBAR AREA TEXT
+       ===================================================== */
+
+    const textRight =
+        fotoKiri
+            ? pageWidth - margin
+            : fotoX - gap;
+
+
+    const textWidth =
+        textRight -
+        textX;
+
+
+
+    /* =====================================================
+       POSISI TEXT
+       ===================================================== */
+
+    let tY =
+        y + 2;
+
+
+
+    /* =====================================================
+       NAMA + NIRM
+       ===================================================== */
+
+    doc.setFont(
+        "helvetica",
+        "bold"
+    );
+
+
+    doc.setFontSize(
+        8
+    );
+
+
+    const nama =
+        mhs.nama || "-";
+
+
+    const nirm =
+        mhs.nirm || "";
+
+
+    const namaText =
+        nirm
+            ? `${nama} (${nirm})`
+            : nama;
+
+
+    const namaLines =
+        doc.splitTextToSize(
+            namaText,
+            textWidth
+        );
+
+
+    doc.text(
+        namaLines,
+        textX,
+        tY
+    );
+
+
+    tY +=
+        namaLines.length *
+        3.5;
+
+
+
+    /* =====================================================
+    ANAK DARI
+    ===================================================== */
+
+    doc.setFont(
+        "helvetica",
+        "bold"
+    );
+
+    doc.setFontSize(
+        7
+    );
+
+    doc.text(
+        "Anak dari:",
+        textX,
+        tY
+    );
+
+    tY += 2.8;
+
+
+    /* =====================================================
+    AYAH + IBU
+    ===================================================== */
+
+    doc.setFont(
+        "helvetica",
+        "normal"
+    );
+
+    const orangTua = [];
+
+    if (mhs.ayah) {
+        orangTua.push(mhs.ayah);
+    }
+
+    if (mhs.ibu) {
+        orangTua.push(mhs.ibu);
+    }
+
+    const orangTuaText =
+        orangTua.length
+            ? orangTua.join(" | ")
+            : "-";
+
+
+    const orangTuaLines =
+        doc.splitTextToSize(
+            orangTuaText,
+            textWidth
+        );
+
+
+    doc.text(
+        orangTuaLines,
+        textX,
+        tY
+    );
+
+
+    /*
+    * Tinggi nama orang tua
+    */
+
+    tY +=
+        orangTuaLines.length * 3.0;
+
+
+    /*
+    * JARAK ANTARA ORANG TUA DAN IPK
+    *
+    * Naikkan angka ini jika ingin
+    * jarak lebih renggang.
+    */
+
+    tY += 2;
+
+
+
+    /* =====================================================
+    IPK
+    ===================================================== */
+
+    doc.setFont(
+        "helvetica",
+        "bold"
+    );
+
+    doc.setFontSize(
+        7
+    );
+
+    const ipkText =
+        `IPK : ${mhs.ipk || "-"}`;
+
+    doc.text(
+        ipkText,
+        textX,
+        tY
+    );
+
+    if (mhs.keterangan_ipk) {
+
+        doc.setFont(
+            "helvetica",
+            "normal"
+        );
+
+        doc.text(
+            ` (${mhs.keterangan_ipk})`,
+            textX +
+                doc.getTextWidth(
+                    ipkText
+                ),
+            tY
+        );
+    }
+
+    tY += 5.5;
+
+
+    /* =====================================================
+       JUDUL TA / SKRIPSI
+       ===================================================== */
+
+    doc.setFont(
+        "helvetica",
+        "bold"
+    );
+
+
+    doc.setFontSize(
+        7
+    );
+
+
+    doc.text(
+        "Judul TA/Skripsi:",
+        textX,
+        tY
+    );
+
+
+    tY +=
+        3.2;
+
+
+    doc.setFont(
+        "helvetica",
+        "normal"
+    );
+
+
+    const judul =
+        mhs.judul || "-";
+
+
+    const judulLines =
+        doc.splitTextToSize(
+            judul,
+            textWidth
+        );
+
+
+    doc.text(
+        judulLines,
+        textX,
+        tY
+    );
+
+
+    tY +=
+        judulLines.length *
+        3.1;
+
+
+
+    /* =====================================================
+       TINGGI CONTENT
+       ===================================================== */
+
+    const contentHeight =
+        Math.max(
+            fotoSize,
+            tY - y
+        );
+
+
+
+    /* =====================================================
+       PADDING SEBELUM GARIS
+       =====================================================
+       
+       Jarak data dengan garis.
+       
+       ===================================================== */
+
+    const paddingBeforeLine =
+        3;
+
+
+
+    /* =====================================================
+       PADDING SETELAH GARIS
+       =====================================================
+       
+       Jarak garis dengan data berikutnya.
+       
+       ===================================================== */
+
+    const paddingAfterLine =
+        4;
+
+
+
+    /* =====================================================
+       TINGGI TOTAL BARIS
+       ===================================================== */
+
+    const rowHeight =
+        contentHeight +
+        paddingBeforeLine +
+        paddingAfterLine;
+
+
+
+    /* =====================================================
+       POSISI GARIS
+       ===================================================== */
+
+    const lineY =
+        y +
+        contentHeight +
+        paddingBeforeLine;
+
+
+    doc.setLineWidth(
+        0.25
+    );
+
+
+    doc.line(
+        margin,
+        lineY,
+        pageWidth - margin,
+        lineY
+    );
+
+
+
+    /* =====================================================
+       KEMBALIKAN TINGGI BARIS
+       ===================================================== */
+
+    return rowHeight;
+}
+
+
+
+/* =========================================================
+   FOOTER
+   ========================================================= */
+
+function drawFooter(
+    doc,
+    pageNumber
+) {
+
+
+    const pageWidth =
+        doc.internal.pageSize.getWidth();
+
+
+    const pageHeight =
+        doc.internal.pageSize.getHeight();
+
+
+    doc.setFont(
+        "helvetica",
+        "normal"
+    );
+
+
+    doc.setFontSize(
+        7
+    );
+
+
+    doc.text(
+        String(pageNumber),
+        pageWidth / 2,
+        pageHeight - 7,
+        {
+            align: "center"
         }
+    );
 
-        const doc = new jsPDF({ format: "a5", unit: "mm" });
-        const perPage = 4;
-        const margin = 10;
-        const fotoW = 25;
-        const fotoH = 32;
-        const textStartX = margin + fotoW + 5;
-        let y = margin;
+}
 
-        for (let i = 0; i < data.length; i++) {
-          const mhs = data[i];
-          const foto = await getBase64Image(mhs.foto);
 
-          const noUrut = (i + 1).toString().padStart(2, "0");
 
-          if (foto) {
-            doc.addImage(foto, "JPEG", margin, y, fotoW, fotoH);
-          } else {
-            doc.rect(margin, y, fotoW, fotoH);
-          }
+/* =========================================================
+   GENERATE PDF
+   ========================================================= */
 
-          const xLabel = textStartX;
-          const xSeparator = textStartX + 22;
-          const xValue = textStartX + 24;
+document
+    .getElementById("generate")
+    .addEventListener(
+        "click",
+        async function () {
 
-          doc.setFontSize(7);
-          let tY = y + 2;
-          doc.text("No. Urut", xLabel, tY);
-          doc.text(`:`, xSeparator, tY);
-          doc.text(`${mhs.nourut}`, xValue, tY); tY += 3.3;
 
-          doc.text("Nama", xLabel, tY);
-          doc.text(`:`, xSeparator, tY);
-          doc.text(`${mhs.nama}`, xValue, tY); tY += 3.3;
+            const loading =
+                document.getElementById(
+                    "loading"
+                );
 
-          doc.text("NPM", xLabel, tY);
-          doc.text(`:`, xSeparator, tY);
-          doc.text(`${mhs.nirm}`, xValue, tY); tY += 3.3;
 
-          doc.text("Tempat/Tgl Lahir", xLabel, tY);
-          doc.text(`:`, xSeparator, tY);
-          doc.text(`${mhs.tmpttl}`, xValue, tY); tY += 3.3;
+            loading.style.display =
+                "block";
 
-          doc.text("Program Studi", xLabel, tY);
-          doc.text(`:`, xSeparator, tY);
-          doc.text(`${mhs.prodi}`, xValue, tY); tY += 3.3;
 
-          doc.text("Asal Sekolah", xLabel, tY);
-          doc.text(`:`, xSeparator, tY);
-          doc.text(`${mhs.asalsekolah}`, xValue, tY); tY += 4;
+            try {
 
-          doc.text("Nama Orangtua", xLabel, tY);
-          doc.text(` `, xValue, tY); tY += 3.3;
 
-          doc.text("Ayah", xLabel, tY);
-          doc.text(`:`, xSeparator, tY);
-          doc.text(`${mhs.ayah}`, xValue, tY); tY += 3.3;
+                /* =================================================
+                   URL DATA
+                   ================================================= */
 
-          doc.text("Ibu", xLabel, tY);
-          doc.text(`:`, xSeparator, tY);
-          doc.text(`${mhs.ibu}`, xValue, tY); tY += 3.3;
+                let url =
+                    "data-buku.php";
 
-          const maxWidth = 75;
 
-          doc.text("Alamat", xLabel, tY);
-          doc.text(`:`, xSeparator, tY);
-          // doc.text(`${mhs.alamat}`, xValue, tY); tY += 3.3;
-          const alamatLines = doc.splitTextToSize(`${mhs.alamat}`, maxWidth);
-          doc.text(alamatLines, xValue, tY);
-          tY += (alamatLines.length * 3);
+                /*
+                 * selectedProdi hanya untuk FILTER
+                 */
 
-          doc.text("Judul Skripsi", xLabel, tY);
-          doc.text(`:`, xSeparator, tY);
-          // const maxWidth = 80;
-          const judulLines = doc.splitTextToSize(`${mhs.judul}`, maxWidth);
-          doc.text(judulLines, xValue, tY);
-          tY += (judulLines.length * 4);
+                if (
+                    selectedProdi
+                ) {
 
-          y += fotoH + (judulLines.length * 2) + (alamatLines.length * 2) + 8;
+                    url +=
+                        "?prodi=" +
+                        encodeURIComponent(
+                            selectedProdi
+                        );
 
-          if ((i + 1) % perPage === 0 && i < data.length - 1) {
-            doc.addPage();
-            y = margin;
-          }
+                }
+
+
+
+                /* =================================================
+                   AMBIL DATA JSON
+                   ================================================= */
+
+                const response =
+                    await fetch(
+                        url
+                    );
+
+
+                if (
+                    !response.ok
+                ) {
+
+                    throw new Error(
+                        "Gagal memuat " +
+                        url
+                    );
+
+                }
+
+
+                const data =
+                    await response.json();
+
+
+
+                /* =================================================
+                   VALIDASI DATA
+                   ================================================= */
+
+                if (
+                    !Array.isArray(
+                        data
+                    ) ||
+                    data.length === 0
+                ) {
+
+                    alert(
+                        "❌ Tidak ada data wisudawan ditemukan."
+                    );
+
+                    return;
+
+                }
+
+
+
+                /* =================================================
+                   BUAT PDF A5
+                   ================================================= */
+
+                const doc =
+                    new jsPDF({
+                        format: "a5",
+                        unit: "mm",
+                        orientation: "portrait"
+                    });
+
+
+
+                /* =================================================
+                   KONFIGURASI
+                   ================================================= */
+
+                const perPage =
+                    5;
+
+
+                let pageNumber =
+                    1;
+
+
+
+                /* =================================================
+                   PRODI HALAMAN PERTAMA
+                   =================================================
+                   
+                   Ambil langsung dari JSON:
+                   
+                   data[0].prodi
+                   
+                   ================================================= */
+
+                const firstProdi =
+                    data[0].prodi || "";
+
+
+
+                /* =================================================
+                   HEADER HALAMAN PERTAMA
+                   ================================================= */
+
+                let y =
+                    await drawHeader(
+                        doc,
+                        firstProdi
+                    );
+
+
+
+                /* =================================================
+                   LOOP DATA
+                   ================================================= */
+
+                for (
+                    let i = 0;
+                    i < data.length;
+                    i++
+                ) {
+
+
+                    const mhs =
+                        data[i];
+
+
+
+                    /* =================================================
+                       POSISI DATA DALAM HALAMAN
+                       =================================================
+                       
+                       Contoh:
+                       
+                       i = 0 -> kiri
+                       i = 1 -> kanan
+                       i = 2 -> kiri
+                       i = 3 -> kanan
+                       i = 4 -> kiri
+                       
+                       i = 5 -> kembali kiri
+                       
+                       ================================================= */
+
+                    const positionIndex =
+                        i % perPage;
+
+
+
+                    /* =================================================
+                       GAMBAR DATA
+                       ================================================= */
+
+                    const rowHeight =
+                        await drawStudent(
+                            doc,
+                            mhs,
+                            y,
+                            positionIndex
+                        );
+
+
+                    y +=
+                        rowHeight;
+
+
+
+                    /* =================================================
+                       SETELAH 5 DATA
+                       PINDAH HALAMAN
+                       ================================================= */
+
+                    if (
+                        (i + 1) %
+                            perPage === 0 &&
+                        i <
+                            data.length - 1
+                    ) {
+
+
+                        /* =============================================
+                           FOOTER HALAMAN SEKARANG
+                           ============================================= */
+
+                        drawFooter(
+                            doc,
+                            pageNumber
+                        );
+
+
+
+                        /* =============================================
+                           BUAT HALAMAN BARU
+                           ============================================= */
+
+                        doc.addPage();
+
+
+                        pageNumber++;
+
+
+
+                        /* =============================================
+                           DATA PERTAMA HALAMAN BARU
+                           =============================================
+                           
+                           Ambil prodi langsung dari JSON.
+                           
+                           ============================================= */
+
+                        const nextStudent =
+                            data[i + 1];
+
+
+                        const nextProdi =
+                            nextStudent &&
+                            nextStudent.prodi
+                                ? nextStudent.prodi
+                                : "";
+
+
+
+                        /* =============================================
+                           HEADER HALAMAN BARU
+                           ============================================= */
+
+                        y =
+                            await drawHeader(
+                                doc,
+                                nextProdi
+                            );
+
+                    }
+
+                }
+
+
+
+                /* =================================================
+                   FOOTER HALAMAN TERAKHIR
+                   ================================================= */
+
+                drawFooter(
+                    doc,
+                    pageNumber
+                );
+
+
+
+                /* =================================================
+                   NAMA FILE
+                   ================================================= */
+
+                const namaFile =
+                    "Buku_Wisuda_" +
+                    (
+                        selectedProdi ||
+                        "Semua_Prodi"
+                    ) +
+                    ".pdf";
+
+
+
+                /* =================================================
+                   SIMPAN PDF
+                   ================================================= */
+
+                doc.save(
+                    namaFile
+                );
+
+
+            } catch (e) {
+
+
+                console.error(
+                    e
+                );
+
+
+                alert(
+                    "Terjadi kesalahan: " +
+                    e.message
+                );
+
+
+            } finally {
+
+
+                loading.style.display =
+                    "none";
+
+            }
+
         }
+    );
 
-        // Nama file otomatis
-        const namaFile = "Buku_Wisuda_" + (selectedProdi || "Semua_Prodi") + ".pdf";
-        doc.save(namaFile);
-      } catch (e) {
-        console.error(e);
-        alert("Terjadi kesalahan: " + e.message);
-      } finally {
-        loading.style.display = "none";
-      }
-    });
-  </script>
+
+</script>
+
 
 </body>
+
 </html>
