@@ -335,36 +335,30 @@ async function getCircularImage(url) {
 
 
         /*
-         * Crop gambar menjadi persegi
-         */
+        * Crop gambar menjadi persegi
+        *
+        * Bagian ATAS dipertahankan.
+        * Jika tinggi foto lebih besar dari lebar,
+        * bagian yang terpotong adalah bagian BAWAH.
+        */
 
-        const minSize =
-            Math.min(
-                img.width,
-                img.height
-            );
+        const cropWidth = img.width;
+        const cropHeight = img.width;
 
-
-        const sx =
-            (img.width -
-                minSize) / 2;
-
-
-        const sy =
-            (img.height -
-                minSize) / 2;
+        const sx = 0;
+        const sy = 0;
 
 
         /*
-         * Gambar ke canvas
-         */
+        * Gambar ke canvas
+        */
 
         ctx.drawImage(
             img,
             sx,
             sy,
-            minSize,
-            minSize,
+            cropWidth,
+            cropHeight,
             0,
             0,
             size,
@@ -421,7 +415,7 @@ async function drawHeader(
        ===================================================== */
 
     const logoUrl =
-        "logo.png";
+        "img/logo/logo.png";
 
 
     let logo =
@@ -886,7 +880,7 @@ async function drawStudent(
     * jarak lebih renggang.
     */
 
-    tY += 2;
+    tY += 1.2;
 
 
 
@@ -929,7 +923,7 @@ async function drawStudent(
         );
     }
 
-    tY += 5.5;
+    tY += 3.8;
 
 
     /* =====================================================

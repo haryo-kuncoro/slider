@@ -22,7 +22,7 @@ $data_final = [];
 foreach ($array_urutan as $prodiforshow) {
     $tableprodi = "tbl_wisudawan";
     if ($tableprodi != "") {
-        $q = "SELECT * FROM $tableprodi WHERE prodi='".$prodiforshow."' ORDER BY urutan ASC";
+        $q = "SELECT * FROM $tableprodi WHERE prodi='".$prodiforshow."' ORDER BY nama ASC";
         $res = mysqli_query($koneksi, $q);
         while ($r = mysqli_fetch_assoc($res)) {
             $NOURUT = strtoupper($r['urutan'] ?? '');
