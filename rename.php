@@ -1,5 +1,7 @@
 <?php
-$dir = "photo/2026/";
+require_once __DIR__ . '/config.php';
+
+$dir = $PATH_GAMBAR_WISUDAWAN;
 
 // Open a directory, and read its contents
 if (is_dir($dir)) {

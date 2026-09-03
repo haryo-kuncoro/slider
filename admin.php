@@ -1,11 +1,13 @@
 <?php
+ob_start();
 session_start();
 if(isset($_SESSION['flash_message'])) {
     echo "<script>alert('".$_SESSION['flash_message']."');</script>";
     unset($_SESSION['flash_message']);
 }
 
-include("connection.php");
+require_once __DIR__ . "/connection.php"; 
+require_once __DIR__ . '/config.php';
 
 // Ambil daftar prodi unik untuk tombol group
 $prodiResult = mysqli_query($koneksi, "SELECT DISTINCT prodi FROM tbl_wisudawan ORDER BY prodi ASC");
@@ -377,6 +379,112 @@ $totalPages = ceil($totalRows / $limit);
 
 // Ambil data dengan limit sesuai filter
 $result = mysqli_query($koneksi, "SELECT * FROM tbl_wisudawan $where ORDER BY prodi ASC, urutan ASC, nama ASC LIMIT $offset, $limit");
+/**
+ * Export hasil cek foto ke Excel
+ * Mengikuti filter prodi yang sedang dipilih dan $PATH_GAMBAR_WISUDAWAN dari config.php.
+ */
+if (isset($_GET['export_foto_excel'])) {
+
+    // CEK FOLDER vendor
+    if (!is_dir(__DIR__ . '/vendor')) {
+
+        echo "<script>
+            alert('Folder vendor tidak ditemukan!\\nSilakan jalankan: composer install');
+            window.location.href = 'admin.php';
+        </script>";
+
+        exit;
+    }
+
+    require __DIR__ . '/vendor/autoload.php';
+
+    $spreadsheet = new \PhpOffice\PhpSpreadsheet\Spreadsheet();
+    $sheet = $spreadsheet->getActiveSheet();
+
+    $sheet->setTitle('cek_foto');
+
+    // Filter prodi mengikuti prodi yang sedang dipilih
+    $exportWhere = $selectedProdi
+        ? "WHERE prodi='" . mysqli_real_escape_string($koneksi, $selectedProdi) . "'"
+        : "";
+
+    $fotoQueryExport = mysqli_query(
+        $koneksi,
+        "SELECT nirm, nama, prodi, urutan
+         FROM tbl_wisudawan
+         $exportWhere
+         ORDER BY prodi ASC, urutan ASC, nama ASC"
+    );
+
+    if (!$fotoQueryExport) {
+        die("Gagal mengambil data: " . mysqli_error($koneksi));
+    }
+
+    // Header kolom
+    $headers = [
+        'A1' => 'no',
+        'B1' => 'urutan',
+        'C1' => 'nirm',
+        'D1' => 'nama',
+        'E1' => 'prodi',
+        'F1' => 'keterangan_foto',
+    ];
+
+    // Isi header
+    foreach ($headers as $cell => $text) {
+        $sheet->setCellValue($cell, $text);
+    }
+
+    // Isi data
+    $startRow = 2;
+    $noExport = 1;
+
+    while ($w = mysqli_fetch_assoc($fotoQueryExport)) {
+
+        $nirmExport = trim((string)($w['nirm'] ?? ''));
+
+        // Lokasi foto mengikuti config.php
+        $fotoPathExport = $PATH_GAMBAR_WISUDAWAN . $nirmExport . ".jpg";
+
+        // Cek file fisik
+        $existsExport = is_file(__DIR__ . "/" . $fotoPathExport);
+
+        $dataExport = [
+            (string)$noExport,
+            (string)($w['urutan'] ?? ''),
+            (string)$nirmExport,
+            (string)($w['nama'] ?? ''),
+            (string)($w['prodi'] ?? ''),
+            $existsExport ? 'ADA' : 'TIDAK ADA',
+        ];
+
+        $col = 'A';
+
+        foreach ($dataExport as $value) {
+            $sheet->setCellValue($col . $startRow, $value);
+            $col++;
+        }
+
+        $startRow++;
+        $noExport++;
+    }
+
+    // Bersihkan seluruh output sebelumnya (termasuk flash message)
+    // agar file XLSX tidak rusak/corrupt.
+    while (ob_get_level() > 0) {
+        ob_end_clean();
+    }
+
+    // Output ke browser (download)
+    header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    header('Content-Disposition: attachment; filename="cek_foto_wisudawan.xlsx"');
+    header('Cache-Control: max-age=0');
+
+    $writer = new \PhpOffice\PhpSpreadsheet\Writer\Xlsx($spreadsheet);
+    $writer->save('php://output');
+
+    exit;
+}
 ?>
 
 <!DOCTYPE html>
@@ -421,6 +529,7 @@ $result = mysqli_query($koneksi, "SELECT * FROM tbl_wisudawan $where ORDER BY pr
         </div>
         <div>
             <button class="btn btn-warning me-2" data-bs-toggle="modal" data-bs-target="#modalFotoCheck"><i class="bi bi-image"></i> Cek Foto</button>
+
             <a href="logo.php" class="btn btn-info me-2">🛠️ Pengaturan Slider</a>
             <a href="<?= $link_slider ?>" class="btn btn-info me-2" target="_blank">🎬 Play Slider</a>
             <a href="<?= $link_buku ?>" class="btn btn-success" target="_blank">📘 Cetak Buku</a>
@@ -619,7 +728,7 @@ $result = mysqli_query($koneksi, "SELECT * FROM tbl_wisudawan $where ORDER BY pr
       </div>
 
       <div class="modal-body">
-        <label class="mb-2">Foto harus berada di dalam folder "photo/[tahun sekarang]/", contoh : "photo/2025/"</label>
+        <label class="mb-2">Foto harus berada di dalam folder sesuai di config.php -> $PATH_GAMBAR_WISUDAWAN, contoh : "photo/2025/"</label>
 
         <table class="table table-bordered table-striped">
           <thead class="table-dark text-center">
@@ -639,11 +748,12 @@ $result = mysqli_query($koneksi, "SELECT * FROM tbl_wisudawan $where ORDER BY pr
           $n = 1;
           while ($w = mysqli_fetch_assoc($fotoQuery)) {
               // Lokasi file foto
-              $year = date("Y");
-              $fotoPath = "photo/$year/" . $w['nirm'] . ".jpg";  
+            //   $year = date("Y");
+            //   $fotoPath = "photo/$year/" . $w['nirm'] . ".jpg"; 
+              $fotoPath = $PATH_GAMBAR_WISUDAWAN . $w['nirm'] . ".jpg";
 
-              // Cek file
-              $exists = file_exists($fotoPath);
+              // Cek file fisik
+              $exists = is_file(__DIR__ . "/" . $fotoPath);
 
               echo "<tr>
                   <td class='text-center'>{$n}</td>
@@ -669,6 +779,10 @@ $result = mysqli_query($koneksi, "SELECT * FROM tbl_wisudawan $where ORDER BY pr
       </div>
 
       <div class="modal-footer">
+        <a href="?export_foto_excel=1<?= $selectedProdi ? '&prodi=' . urlencode($selectedProdi) : '' ?>"
+           class="btn btn-success">
+            <i class="bi bi-file-earmark-excel"></i> Export Excel
+        </a>
         <button class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
       </div>
 

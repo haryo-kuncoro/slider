@@ -1,5 +1,6 @@
 <?php
-require_once("connection.php");
+require_once __DIR__ . "/connection.php"; 
+require_once __DIR__ . '/config.php';
 
 $show_upload_no_photo = '0';
 $total_image_perpage = 5;
@@ -37,7 +38,16 @@ foreach ($array_urutan as $prodiforshow) {
             $JUDUL = $r['judul'] ?? '';
             $IPK = $r['ipk'] ?? '';
             $KETERANGAN_IPK = $r['keterangan'] ?? '';
-            $GAMBAR = file_exists("photo/2026/$NIRM.jpg") ? "photo/2026/$NIRM.jpg" : "photo/alumni.jpg";
+
+            // Gambar
+            if (is_file(__DIR__ . "/" . $PATH_GAMBAR_WISUDAWAN . $NIRM . "_thumb.jpg")) {
+                $GAMBAR = $PATH_GAMBAR_WISUDAWAN . $NIRM . "_thumb.jpg";
+            } elseif (is_file(__DIR__ . "/" . $PATH_GAMBAR_WISUDAWAN . $NIRM . ".jpg")) {
+                $GAMBAR = $PATH_GAMBAR_WISUDAWAN . $NIRM . ".jpg";
+            } else {
+                // Gunakan foto default
+                $GAMBAR = $FOTO_DEFAULT_WISUDAWAN;
+            }
 
             $data_final[] = [
                 "nourut" => $NOURUT,

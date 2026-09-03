@@ -411,6 +411,22 @@ async function drawHeader(
 
 
     /* =====================================================
+       GARIS ATAS HEADER
+       ===================================================== */
+
+    doc.setLineWidth(
+        0.3
+    );
+
+    doc.line(
+        margin,
+        6,
+        pageWidth - margin,
+        6
+    );
+
+
+    /* =====================================================
        LOGO
        ===================================================== */
 
@@ -444,19 +460,64 @@ async function drawHeader(
         8;
 
 
-    const logoSize =
+    /* =====================================================
+       UKURAN LOGO
+       =====================================================
+
+       Tinggi logo tetap 10 mm.
+       Lebar mengikuti rasio asli gambar agar logo
+       tidak dipaksa menjadi persegi.
+
+       ===================================================== */
+
+    const logoHeight =
         10;
+
+    let logoWidth =
+        logoHeight;
 
 
     if (logo) {
+
+        /* Ambil ukuran asli gambar dari data URL */
+        const imgLogo =
+            new Image();
+
+        imgLogo.src =
+            logo;
+
+        await new Promise(
+            (resolve) => {
+                imgLogo.onload =
+                    resolve;
+
+                imgLogo.onerror =
+                    resolve;
+            }
+        );
+
+        if (
+            imgLogo.naturalWidth &&
+            imgLogo.naturalHeight
+        ) {
+
+            logoWidth =
+                logoHeight *
+                (
+                    imgLogo.naturalWidth /
+                    imgLogo.naturalHeight
+                );
+
+        }
+
 
         doc.addImage(
             logo,
             "PNG",
             logoX,
             logoY,
-            logoSize,
-            logoSize
+            logoWidth,
+            logoHeight
         );
 
     } else {
@@ -492,7 +553,7 @@ async function drawHeader(
 
 
     doc.setFontSize(
-        9
+        10
     );
 
 
@@ -531,13 +592,13 @@ async function drawHeader(
     ) {
 
         doc.setFontSize(
-            7
+            8
         );
 
     } else {
 
         doc.setFontSize(
-            8
+            9
         );
 
     }
@@ -1259,7 +1320,20 @@ document
 
                 /* =================================================
                    LOOP DATA
+                   =================================================
+
+                   ATURAN:
+                   1. Maksimal 5 mahasiswa per halaman.
+                   2. Jika prodi berubah, WAJIB mulai halaman baru.
+                   3. Posisi kiri/kanan di-reset setiap halaman.
+
                    ================================================= */
+
+                let currentProdi =
+                    data[0].prodi || "";
+
+                let positionIndex =
+                    0;
 
                 for (
                     let i = 0;
@@ -1267,31 +1341,112 @@ document
                     i++
                 ) {
 
-
                     const mhs =
                         data[i];
 
+                    const mahasiswaProdi =
+                        mhs.prodi || "";
 
 
                     /* =================================================
-                       POSISI DATA DALAM HALAMAN
-                       =================================================
-                       
-                       Contoh:
-                       
-                       i = 0 -> kiri
-                       i = 1 -> kanan
-                       i = 2 -> kiri
-                       i = 3 -> kanan
-                       i = 4 -> kiri
-                       
-                       i = 5 -> kembali kiri
-                       
+                       CEK PERGANTIAN PRODI
                        ================================================= */
 
-                    const positionIndex =
-                        i % perPage;
+                    if (
+                        i > 0 &&
+                        mahasiswaProdi !== currentProdi
+                    ) {
 
+                        /* =============================================
+                           FOOTER HALAMAN PRODI SEBELUMNYA
+                           ============================================= */
+
+                        drawFooter(
+                            doc,
+                            pageNumber
+                        );
+
+
+                        /* =============================================
+                           PRODI BERBEDA -> HALAMAN BARU
+                           ============================================= */
+
+                        doc.addPage();
+
+                        pageNumber++;
+
+
+                        currentProdi =
+                            mahasiswaProdi;
+
+
+                        /* =============================================
+                           HEADER PRODI BARU
+                           ============================================= */
+
+                        y =
+                            await drawHeader(
+                                doc,
+                                currentProdi
+                            );
+
+
+                        /* =============================================
+                           RESET POSISI
+                           ============================================= */
+
+                        positionIndex =
+                            0;
+
+                    }
+
+
+                    /* =================================================
+                       CEK BATAS 5 DATA PER HALAMAN
+                       ================================================= */
+
+                    if (
+                        positionIndex >= perPage
+                    ) {
+
+                        /* =============================================
+                           FOOTER HALAMAN SEKARANG
+                           ============================================= */
+
+                        drawFooter(
+                            doc,
+                            pageNumber
+                        );
+
+
+                        /* =============================================
+                           BUAT HALAMAN BARU
+                           ============================================= */
+
+                        doc.addPage();
+
+                        pageNumber++;
+
+
+                        /* =============================================
+                           HEADER DENGAN PRODI YANG SAMA
+                           ============================================= */
+
+                        y =
+                            await drawHeader(
+                                doc,
+                                currentProdi
+                            );
+
+
+                        /* =============================================
+                           RESET POSISI
+                           ============================================= */
+
+                        positionIndex =
+                            0;
+
+                    }
 
 
                     /* =================================================
@@ -1311,76 +1466,9 @@ document
                         rowHeight;
 
 
-
-                    /* =================================================
-                       SETELAH 5 DATA
-                       PINDAH HALAMAN
-                       ================================================= */
-
-                    if (
-                        (i + 1) %
-                            perPage === 0 &&
-                        i <
-                            data.length - 1
-                    ) {
-
-
-                        /* =============================================
-                           FOOTER HALAMAN SEKARANG
-                           ============================================= */
-
-                        drawFooter(
-                            doc,
-                            pageNumber
-                        );
-
-
-
-                        /* =============================================
-                           BUAT HALAMAN BARU
-                           ============================================= */
-
-                        doc.addPage();
-
-
-                        pageNumber++;
-
-
-
-                        /* =============================================
-                           DATA PERTAMA HALAMAN BARU
-                           =============================================
-                           
-                           Ambil prodi langsung dari JSON.
-                           
-                           ============================================= */
-
-                        const nextStudent =
-                            data[i + 1];
-
-
-                        const nextProdi =
-                            nextStudent &&
-                            nextStudent.prodi
-                                ? nextStudent.prodi
-                                : "";
-
-
-
-                        /* =============================================
-                           HEADER HALAMAN BARU
-                           ============================================= */
-
-                        y =
-                            await drawHeader(
-                                doc,
-                                nextProdi
-                            );
-
-                    }
+                    positionIndex++;
 
                 }
-
 
 
                 /* =================================================

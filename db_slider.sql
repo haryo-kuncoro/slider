@@ -11,7 +11,7 @@
  Target Server Version : 80030 (8.0.30)
  File Encoding         : 65001
 
- Date: 18/11/2025 16:22:37
+ Date: 03/09/2026 17:50:22
 */
 
 SET NAMES utf8mb4;
@@ -59,6 +59,7 @@ DROP TABLE IF EXISTS `tbl_slider_logo`;
 CREATE TABLE `tbl_slider_logo`  (
   `id` int NOT NULL AUTO_INCREMENT,
   `file_name` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+  `position` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
   `status` enum('active','inactive') CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT 'active',
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`) USING BTREE
@@ -67,10 +68,10 @@ CREATE TABLE `tbl_slider_logo`  (
 -- ----------------------------
 -- Records of tbl_slider_logo
 -- ----------------------------
-INSERT INTO `tbl_slider_logo` VALUES (2, '1763284401_logo-hukum.png', 'active', '2025-11-16 16:13:21');
-INSERT INTO `tbl_slider_logo` VALUES (3, '1763284980_logo-manajemen.png', 'active', '2025-11-16 16:23:00');
-INSERT INTO `tbl_slider_logo` VALUES (4, '1763284986_logo-yayasan.png', 'active', '2025-11-16 16:23:06');
-INSERT INTO `tbl_slider_logo` VALUES (5, '1763284996_diktisaintek.png', 'active', '2025-11-16 16:23:16');
+INSERT INTO `tbl_slider_logo` VALUES (2, '1763284401_logo-hukum.png', 'center', 'active', '2025-11-16 16:13:21');
+INSERT INTO `tbl_slider_logo` VALUES (3, '1763284980_logo-manajemen.png', 'center', 'active', '2025-11-16 16:23:00');
+INSERT INTO `tbl_slider_logo` VALUES (4, '1763284986_logo-yayasan.png', 'center', 'active', '2025-11-16 16:23:06');
+INSERT INTO `tbl_slider_logo` VALUES (5, '1763284996_diktisaintek.png', 'center', 'active', '2025-11-16 16:23:16');
 
 -- ----------------------------
 -- Table structure for tbl_wisudawan

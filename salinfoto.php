@@ -1,5 +1,6 @@
 <?php
-require_once("connection.php");
+require_once __DIR__ . "/connection.php"; 
+require_once __DIR__ . '/config.php';
 
 $show_upload_no_photo = '0';
 $show_data_total = '1';

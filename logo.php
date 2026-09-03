@@ -1,5 +1,6 @@
 <?php
-require_once "connection.php";
+require_once __DIR__ . "/connection.php"; 
+require_once __DIR__ . '/config.php';
 
 /* ------------------------------
    ACTION HANDLER (UPLOAD / TOGGLE / DELETE)
@@ -7,17 +8,40 @@ require_once "connection.php";
 
 // UPLOAD LOGO
 if (isset($_POST['upload_logo'])) {
-    $dir = "img/logo/";
+    $dir = $PATH_LOGO;
     $name = time() . "_" . basename($_FILES["logo_file"]["name"]);
-    move_uploaded_file($_FILES["logo_file"]["tmp_name"], $dir . $name);
 
-    mysqli_query($koneksi, "INSERT INTO tbl_slider_logo (file_name) VALUES ('$name')");
-    header("Location: logo.php"); exit;
+    // Ambil posisi logo
+    $position = $_POST['position'] ?? 'center';
+
+    // Validasi posisi
+    if (!in_array($position, ['left', 'center', 'right'])) {
+        $position = 'center';
+    }
+
+    if (
+        move_uploaded_file(
+            $_FILES["logo_file"]["tmp_name"],
+            $dir . $name
+        )
+    ) {
+
+        mysqli_query(
+            $koneksi,
+            "INSERT INTO tbl_slider_logo
+                (file_name, position)
+             VALUES
+                ('$name', '$position')"
+        );
+    }
+
+    header("Location: logo.php");
+    exit;
 }
 
 // UPLOAD BACKGROUND
 if (isset($_POST['upload_bg'])) {
-    $dir = "img/background/";
+    $dir = $PATH_BACKGROUND;
     $name = time() . "_" . basename($_FILES["bg_file"]["name"]);
     move_uploaded_file($_FILES["bg_file"]["tmp_name"], $dir . $name);
 
@@ -34,11 +58,33 @@ if (isset($_GET['toggle_logo'])) {
     header("Location: logo.php"); exit;
 }
 
+// QUICK CHANGE POSITION LOGO
+if (isset($_GET['set_position_logo'])) {
+
+    $id = (int) $_GET['set_position_logo'];
+    $position = $_GET['position'] ?? 'center';
+
+    // Validasi position
+    if (!in_array($position, ['left', 'center', 'right'], true)) {
+        $position = 'center';
+    }
+
+    mysqli_query(
+        $koneksi,
+        "UPDATE tbl_slider_logo
+         SET position='$position'
+         WHERE id=$id"
+    );
+
+    header("Location: logo.php");
+    exit;
+}
+
 // DELETE LOGO
 if (isset($_GET['del_logo'])) {
     $id = $_GET['del_logo'];
     $r = mysqli_fetch_assoc(mysqli_query($koneksi, "SELECT file_name FROM tbl_slider_logo WHERE id=$id"));
-    unlink("img/logo/".$r['file_name']);
+    unlink($PATH_LOGO . $r['file_name']);
     mysqli_query($koneksi, "DELETE FROM tbl_slider_logo WHERE id=$id");
     header("Location: logo.php"); exit;
 }
@@ -56,7 +102,7 @@ if (isset($_GET['toggle_bg'])) {
 if (isset($_GET['del_bg'])) {
     $id = $_GET['del_bg'];
     $r = mysqli_fetch_assoc(mysqli_query($koneksi, "SELECT file_name FROM tbl_slider_background WHERE id=$id"));
-    unlink("img/background/".$r['file_name']);
+    unlink($PATH_BACKGROUND . $r['file_name']);
     mysqli_query($koneksi, "DELETE FROM tbl_slider_background WHERE id=$id");
     header("Location: logo.php"); exit;
 }
@@ -89,12 +135,56 @@ if (isset($_GET['del_bg'])) {
         <div class="card-header bg-primary text-white">Upload Logo Baru</div>
         <div class="card-body">
             <form method="post" enctype="multipart/form-data">
-                <input type="hidden" name="upload_logo" value="1">
+                <input
+                    type="hidden"
+                    name="upload_logo"
+                    value="1"
+                >
+
                 <div class="mb-3">
-                    <label class="form-label">Pilih file logo</label>
-                    <input type="file" name="logo_file" class="form-control" required>
+                    <label class="form-label">
+                        Pilih file logo
+                    </label>
+                    <input
+                        type="file"
+                        name="logo_file"
+                        class="form-control"
+                        required
+                    >
                 </div>
-                <button class="btn btn-primary"><i class="bi bi-cloud-arrow-up"></i> Upload</button>
+
+                <div class="mb-3">
+                    <label class="form-label">
+                        Posisi Logo
+                    </label>
+
+                    <select
+                        name="position"
+                        class="form-select"
+                        required
+                    >
+                        <option value="left">
+                            Left (Kiri)
+                        </option>
+
+                        <option value="center" selected>
+                            Center (Tengah)
+                        </option>
+
+                        <option value="right">
+                            Right (Kanan)
+                        </option>
+                    </select>
+
+                    <div class="form-text">
+                        Atur posisi kelompok logo ketika ditampilkan pada slider.
+                    </div>
+                </div>
+
+                <button class="btn btn-primary">
+                    <i class="bi bi-cloud-arrow-up"></i>
+                    Upload
+                </button>
             </form>
         </div>
     </div>
@@ -105,22 +195,117 @@ if (isset($_GET['del_bg'])) {
         <div class="card-body">
             <table class="table table-bordered">
                 <tr>
-                    <th>Preview</th><th>Status</th><th>Aksi</th>
+                    <th>Preview</th>
+                    <th>Position</th>
+                    <th>Status</th>
+                    <th>Aksi</th>
                 </tr>
 
                 <?php
-                $q = mysqli_query($koneksi, "SELECT * FROM tbl_slider_logo ORDER BY id ASC");
-                while($r = mysqli_fetch_assoc($q)){
+                $q = mysqli_query(
+                    $koneksi,
+                    "SELECT * FROM tbl_slider_logo ORDER BY id ASC"
+                );
+
+                while ($r = mysqli_fetch_assoc($q)) {
+                    // Posisi logo
+                    $position = $r['position'] ?? 'center';
+
+                    // Label posisi
+                    if ($position == 'left') {
+                        $positionLabel = 'Left';
+                        $positionColor = 'primary';
+                    } elseif ($position == 'right') {
+                        $positionLabel = 'Right';
+                        $positionColor = 'warning';
+                    } else {
+                        $positionLabel = 'Center';
+                        $positionColor = 'success';
+                    }
+
+                    // Status
+                    $statusColor =
+                        ($r['status'] == 'active')
+                            ? 'success'
+                            : 'secondary';
+
                     echo "
                     <tr>
-                        <td><img src='img/logo/$r[file_name]' height='50'></td>
-                        <td><span class='badge bg-".($r['status']=='active'?'success':'secondary')."'>$r[status]</span></td>
+
+                        <!-- PREVIEW -->
                         <td>
-                            <a href='logo.php?toggle_logo=$r[id]' class='btn btn-warning btn-sm'><i class='bi bi-toggles'></i> Toggle</a>
-                            <a href='logo.php?del_logo=$r[id]' class='btn btn-danger btn-sm' onclick='return confirm(\"Hapus logo?\")'><i class='bi bi-trash'></i> Delete</a>
+                            <img
+                                src='{$PATH_LOGO}{$r['file_name']}'
+                                height='50'
+                            >
                         </td>
-                    </tr>";
+
+
+                        <!-- POSITION -->
+                        <td>
+                            <form method='get' style='margin:0;'>
+                                <input
+                                    type='hidden'
+                                    name='set_position_logo'
+                                    value='{$r['id']}'
+                                >
+
+                                <select
+                                    name='position'
+                                    class='form-select form-select-sm'
+                                    onchange='this.form.submit()'
+                                    style='min-width:120px;'
+                                >
+                                    <option value='left' " . ($position == 'left' ? 'selected' : '') . ">
+                                        Left
+                                    </option>
+
+                                    <option value='center' " . ($position == 'center' ? 'selected' : '') . ">
+                                        Center
+                                    </option>
+
+                                    <option value='right' " . ($position == 'right' ? 'selected' : '') . ">
+                                        Right
+                                    </option>
+                                </select>
+                            </form>
+                        </td>
+
+
+                        <!-- STATUS -->
+                        <td>
+                            <span class='badge bg-{$statusColor}'>
+                                {$r['status']}
+                            </span>
+                        </td>
+
+
+                        <!-- AKSI -->
+                        <td>
+
+                            <a
+                                href='logo.php?toggle_logo={$r['id']}'
+                                class='btn btn-warning btn-sm'
+                            >
+                                <i class='bi bi-toggles'></i>
+                                Toggle
+                            </a>
+
+                            <a
+                                href='logo.php?del_logo={$r['id']}'
+                                class='btn btn-danger btn-sm'
+                                onclick='return confirm(\"Hapus logo?\")'
+                            >
+                                <i class='bi bi-trash'></i>
+                                Delete
+                            </a>
+
+                        </td>
+
+                    </tr>
+                    ";
                 }
+
                 ?>
 
             </table>
@@ -157,7 +342,7 @@ if (isset($_GET['del_bg'])) {
                 while($r = mysqli_fetch_assoc($q)){
                     echo "
                     <tr>
-                        <td><img src='img/background/$r[file_name]' height='60'></td>
+                        <td><img src='{$PATH_BACKGROUND}{$r['file_name']}' height='60'></td>
                         <td><span class='badge bg-".($r['status']=='active'?'success':'secondary')."'>$r[status]</span></td>
                         <td>
                             <a href='logo.php?toggle_bg=$r[id]' class='btn btn-warning btn-sm'><i class='bi bi-toggles'></i> Toggle</a>

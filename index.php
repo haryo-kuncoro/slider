@@ -1,5 +1,6 @@
 <?php
-    require_once("connection.php"); // Assumes you have a connection.php file for database connection
+    require_once __DIR__ . "/connection.php"; 
+    require_once __DIR__ . '/config.php';
 
     $show_upload_no_photo = '0';
     $show_data_total = '1';
@@ -114,42 +115,156 @@ if ($bg) {
                                     $PRODI = !empty($row['prodi']) ? strtoupper($row['prodi']) : "";
                                     
                                     // Lazy load images, use thumbnail if available
-                                    if(is_file("photo/2025/".$NIRM."_thumb.jpg")){
-                                        $GAMBAR = "photo/2025/".$NIRM."_thumb.jpg";
-                                    }else{
-                                        if(is_file("photo/2025/".$NIRM.".jpg")){
-                                            $GAMBAR = "photo/2025/".$NIRM.".jpg";
-                                        }else{
-                                            if($show_upload_no_photo=='1'){
-                                                echo "<script>console.log('".$NAMA." ".$PRODI."');</script>";
-                                            }
-                                            $GAMBAR = "photo/alumni.jpg";
+                                    if (is_file($PATH_GAMBAR_WISUDAWAN . $NIRM . "_thumb.jpg")) {
+                                        $GAMBAR = $PATH_GAMBAR_WISUDAWAN . $NIRM . "_thumb.jpg";
+
+                                    } elseif (is_file($PATH_GAMBAR_WISUDAWAN . $NIRM . ".jpg")) {
+                                        $GAMBAR = $PATH_GAMBAR_WISUDAWAN . $NIRM . ".jpg";
+                                    } else {
+                                        if ($show_upload_no_photo == '1') {
+                                            echo "<script>console.log('" . $NAMA . " " . $PRODI . "');</script>";
                                         }
+                                        // Foto default
+                                        $GAMBAR = $FOTO_DEFAULT_WISUDAWAN;
                                     }
     
                                     // Render slide HTML
-                                    $showIPK = true; // [true] atau [false], ubah untuk menampilkan ipk dan ket cumlaude 
+                                    $showIPK = true; // [true] atau [false], ubah untuk menampilkan ipk dan ket cumlaude                                    // Siapkan logo berdasarkan position
+                                    $logoLeft = [];
+                                    $logoCenter = [];
+                                    $logoRight = [];
 
+                                    $qLogo = mysqli_query(
+                                        $koneksi,
+                                        "SELECT file_name, position
+                                         FROM tbl_slider_logo
+                                         WHERE status='active'
+                                         ORDER BY id ASC"
+                                    );
+
+                                    while ($lg = mysqli_fetch_assoc($qLogo)) {
+
+                                        $path = "img/logo/" . $lg['file_name'];
+
+                                        if (!file_exists($path)) {
+                                            continue;
+                                        }
+
+                                        $position = strtolower(trim($lg['position'] ?? 'center'));
+
+                                        if ($position === 'left') {
+                                            $logoLeft[] = $path;
+                                        } elseif ($position === 'right') {
+                                            $logoRight[] = $path;
+                                        } else {
+                                            $logoCenter[] = $path;
+                                        }
+                                    }
+
+                                    $hasLogo =
+                                        count($logoLeft) > 0 ||
+                                        count($logoCenter) > 0 ||
+                                        count($logoRight) > 0;
+
+
+                                    // Jika tidak ada logo aktif, gunakan logo default
+                                    if (!$hasLogo) {
+                                        $logoCenter[] = "img/new/diktisaintek.png";
+                                    }
+
+
+                                    // Render slide HTML
                                     echo "
                                     <div class='glide__slide' data-index='$i'>
                                         <div class='_container'>
                                             <div class='_column'>
-                                                <div class='_row _center_align _logo'>";
-                                                    $qLogo = mysqli_query($koneksi, "SELECT file_name FROM tbl_slider_logo WHERE status='active' ORDER BY id ASC");
-                                                    $hasLogo = false; // Flag untuk mendeteksi minimal 1 logo valid
 
-                                                    while ($lg = mysqli_fetch_assoc($qLogo)) {
-                                                        $path = "img/logo/" . $lg['file_name'];
+                                                <div class='_row _logo'
+                                                     style='
+                                                         width:100%;
+                                                         display:flex;
+                                                         align-items:center;
+                                                         justify-content:space-between;
+                                                     '>
 
-                                                        if (file_exists($path)) {
-                                                            echo "<img src='$path' />";
-                                                            $hasLogo = true;
-                                                        }
-                                                    }
-                                                    if (!$hasLogo) {
-                                                        echo "<img src='img/new/diktisaintek.png' />";
-                                                    }
-                                                echo "
+                                                    <!-- LOGO KIRI -->
+                                                    <div class='logo-group logo-left'
+                                                         style='
+                                                             flex:1 1 0;
+                                                             display:flex;
+                                                             justify-content:flex-start;
+                                                             align-items:center;
+                                                             gap:10px;
+                                                         '>";
+
+                                    foreach ($logoLeft as $logo) {
+                                        echo "
+                                                        <img
+                                                            src='$logo'
+                                                            style='
+                                                                height:70px;
+                                                                width:auto;
+                                                                object-fit:contain;
+                                                                display:block;
+                                                            '
+                                                        />";
+                                    }
+
+                                    echo "
+                                                    </div>
+
+                                                    <!-- LOGO TENGAH -->
+                                                    <div class='logo-group logo-center'
+                                                         style='
+                                                             flex:0 1 auto;
+                                                             display:flex;
+                                                             justify-content:center;
+                                                             align-items:center;
+                                                             gap:10px;
+                                                         '>";
+
+                                    foreach ($logoCenter as $logo) {
+                                        echo "
+                                                        <img
+                                                            src='$logo'
+                                                            style='
+                                                                height:70px;
+                                                                width:auto;
+                                                                object-fit:contain;
+                                                                display:block;
+                                                            '
+                                                        />";
+                                    }
+
+                                    echo "
+                                                    </div>
+
+                                                    <!-- LOGO KANAN -->
+                                                    <div class='logo-group logo-right'
+                                                         style='
+                                                             flex:1 1 0;
+                                                             display:flex;
+                                                             justify-content:flex-end;
+                                                             align-items:center;
+                                                             gap:10px;
+                                                         '>";
+
+                                    foreach ($logoRight as $logo) {
+                                        echo "
+                                                        <img
+                                                            src='$logo'
+                                                            style='
+                                                                height:70px;
+                                                                width:auto;
+                                                                object-fit:contain;
+                                                                display:block;
+                                                            '
+                                                        />";
+                                    }
+
+                                    echo "
+                                                    </div>
+
                                                 </div>
                                             </div>
                                             <div class='_row'>
