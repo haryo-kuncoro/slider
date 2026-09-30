@@ -295,18 +295,56 @@ if ($bg) {
     
                                                 <div>
                                                     <div class='_column' style='text-align:right'>
-                                                        <div class='_profile'>
-                                                            <img class='lazyload' src='$GAMBAR'/>
+                                                        <div class='_profile' style='position:relative;width:300px;height:400px;padding:7px;margin:0 auto;border-radius:20px;background:linear-gradient(135deg,#fff3a0 0%,#d8a927 18%,#fff5ad 36%,#b98212 58%,#ffe878 78%,#b67c0b 100%);box-shadow:0 4px 12px rgba(0,0,0,.35),inset 0 0 5px rgba(255,255,255,.9);box-sizing:border-box;'>
+                                                            <div style='width:100%;height:100%;padding:3px;border:1px solid rgba(255,255,255,.9);border-radius:15px;box-sizing:border-box;'>
+                                                                <img class='lazyload' src='$GAMBAR' style='display:block;width:100%;height:100%;object-fit:cover;border-radius:12px;'/>
+                                                            </div>
                                                         </div>
                                                     </div>";
 
                                     if ($showIPK && !empty($IPK)) {
                                         echo "
-                                            <div class='_column' style='text-align:right'>
-                                                <div class='_ipk' style='text-align:center'>
-                                                    <p>IPK (Indeks Prestasi Kumulatif)</p>
-                                                    <h2>$IPK</h2>
-                                                    <h3>~ $KETERANGAN ~</h3>
+                                            <div class='_column' style='text-align:right;padding-top:10px;'>
+                                                <div class='_ipk' style='position:relative;width:300px;min-height:108px;margin:0 auto;padding:10px 8px 15px;text-align:center;box-sizing:border-box;border:2px solid #f2cf4a;border-radius:17px;background:linear-gradient(145deg,#0d3b82 0%,#092d68 50%,#061f4e 100%);box-shadow:0 5px 13px rgba(0,0,0,.35),inset 0 0 0 1px rgba(255,255,255,.12);'>
+                                                    <img src='img/new/padi-kiri.png' alt='' style='position:absolute;left:3px;top:8px;width:45px;height:85px;object-fit:contain;'/>
+                                                    <img src='img/new/padi-kanan.png' alt='' style='position:absolute;right:3px;top:8px;width:45px;height:85px;object-fit:contain;'/>
+                                                    <p style='position:relative;z-index:2;margin:1px 38px 10px;color:#fff;font-size:10px;font-weight:600;white-space:nowrap;'>
+                                                        <span style='color:#fff5ad;font-weight:800;'>Indeks Prestasi Kumulatif</span>
+                                                    </p>
+                                                    <h2 style='position:relative;z-index:2;margin:3px 0 8px;color:#f5d45a;font-size:36px;line-height:1;font-weight:900;text-shadow:0 2px 3px rgba(0,0,0,.4);'>
+                                                        $IPK
+                                                    </h2>
+                                                    <h3 style='
+                                                        position:absolute;
+                                                        z-index:10;
+                                                        left:50%;
+                                                        bottom:-14px;
+                                                        transform:translateX(-50%);
+                                                        display:block;
+                                                        width:210px;
+                                                        margin:0;
+                                                        padding:6px 14px;
+                                                        text-align:center;
+                                                        border-radius:22px;
+                                                        border:1px solid #f8e48a;
+                                                        background:linear-gradient(
+                                                            180deg,
+                                                            #fff078 0%,
+                                                            #f6d03e 45%,
+                                                            #dca91e 100%
+                                                        );
+                                                        opacity:1;
+                                                        color:#12366e;
+                                                        font-size:12px;
+                                                        line-height:1.1;
+                                                        font-weight:900;
+                                                        text-transform:uppercase;
+                                                        box-shadow:
+                                                            0 3px 6px rgba(0,0,0,.3),
+                                                            inset 0 1px 1px rgba(255,255,255,.75);
+                                                    '>
+                                                        ~ $KETERANGAN ~
+                                                    </h3>
                                                 </div>
                                             </div>";
                                     }
